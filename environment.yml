@@ -1,0 +1,32 @@
+name: UniCure
+channels:
+  - pytorch
+  - nvidia
+  - defaults
+  - conda-forge
+  - https://repo.anaconda.com/pkgs/main
+  - https://repo.anaconda.com/pkgs/r
+dependencies:
+  - python=3.10
+  - numpy
+  - pandas
+  - scikit-learn
+  - conda-forge::fastparquet
+  - pytorch
+  - pytorch-cuda=12.1
+  - torchaudio
+  - torchvision
+  - nccl
+  - conda-forge::tqdm
+  - mpi4py
+  - conda-forge::cupy-core
+  - pyarrow
+  - seaborn
+  - conda-forge::anndata
+  - cuda-cudart
+  - cuda-version=12
+  - conda-forge::scanpy
+  - pip:
+    - lora-pytorch==0.2.0
+    - accelerate==1.2.1
+    - deepspeed==0.16.2
