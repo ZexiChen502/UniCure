@@ -14,8 +14,8 @@ UniCure is the **first multimodal foundation model** integrating omics (UCE) and
 ### Hardware Requirements
 | Use Case              | Minimum Configuration                | Recommended Configuration       |
 |-----------------------|--------------------------------------|---------------------------------|
-| **Full Reproduction** | 4× NVIDIA GPUs (80GB VRAM each)<br>AMD EPYC 7H12/equivalent CPU<br>1TB RAM<br>10TB NVMe Storage | 8× A100/H100 80GB<br>Dual-socket CPU<br>2TB RAM<br>20TB NVMe RAID |
-| **Testing/Inference** | 1× NVIDIA GPU (32GB+ VRAM)<br>Ryzen 9/i9 CPU<br>128GB RAM<br>2TB SSD | 1× A6000/RTX 4090<br>256GB RAM<br>4TB NVMe SSD |
+| **Full Reproduction** | 4× NVIDIA GPUs (80GB VRAM each) | 8× A100/H100 80GB |
+| **Testing/Inference** | 1× NVIDIA GPU (32GB+ VRAM) | 1× NVIDIA GPU (80GB VRAM) |
 
 ### Software Requirements
 **OS:** Linux (Ubuntu 22.04 LTS or Rocky Linux 8.6+ recommended)  
@@ -37,12 +37,12 @@ conda create -n unicure python=3.10
 conda activate unicure
 
 # 2. Install PyTorch (select appropriate CUDA version)
-# Check latest at: https://pytorch.org/get-started/locally/ !
+# ⚠ Check latest at: https://pytorch.org/get-started/locally/
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 # 3. Install Accelerate & DeepSpeed (optional)
 pip install accelerate
-# Follow configuration (about how to configure DeepSpeed): https://github.com/huggingface/accelerate !
+# ⚠ Follow configuration (about how to configure DeepSpeed): https://github.com/huggingface/accelerate
 
 # 4. Install core dependencies
 pip install numpy pandas scikit-learn fastparquet tqdm anndata scanpy lora-pytorch
