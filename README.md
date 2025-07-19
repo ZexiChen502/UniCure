@@ -7,7 +7,7 @@ UniCure is the **first multimodal foundation model** integrating omics (UCE) and
 - **FlexPert**: Sliding-window cross-attention for flexible drug-cell interaction modeling  
 - **LoRA-PEFT**: Parameter-efficient tuning preserving pretrained knowledge  
 - **MMD loss**: Handles unpaired perturbation data without cell matching    
-
+- **Staged training**: Enhancing computational efficiency and functional modularity
 
 
 
