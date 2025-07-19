@@ -97,7 +97,7 @@ python start_test.py
 ```
 ## Reproduction :fire:
 ```
-see main.py
+python main.py
 ```
 
 ## Contact 📬
