@@ -40,7 +40,7 @@ conda activate unicure
 ⚠ Check latest at: https://pytorch.org/get-started/locally/
 pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
-3. Install Accelerate & DeepSpeed (optional)
+3. Install Accelerate & DeepSpeed (recommended for reproduction)
 pip install accelerate
 ⚠ Follow configuration (about how to configure DeepSpeed): https://github.com/huggingface/accelerate
 
@@ -90,6 +90,22 @@ UniCure/
         ├── all_tokens.torch
         └── species_chrom.csv
 ```
+
+## Testing :zap:
+```
+python start_test.py
+```
+## Reproduction :fire:
+```
+see main.py
+```
+
+## Contact 📬
+Zexi Chen
+📧 Email: jersey8768@outlook.com
+
+## Citation 🧷
+doi: https://doi.org/10.1101/2025.06.14.658531
 
 
 ## License 📄
