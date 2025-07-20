@@ -82,7 +82,7 @@ After downloading, confirm directory structure:
 UniCure/
 ├── data/
 │   ├── lincs2020/
-│   ├── sciplex/
+│   ├── sciplex/ 
 │	└── PTC/
 └── requirement/
     ├── model_weights/
@@ -92,7 +92,7 @@ UniCure/
         └── species_chrom.csv
 ```
 
-## Quick Testing :zap:
+## Quick Test :zap:
 ```
 python start_test.py
 ```
