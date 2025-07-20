@@ -65,7 +65,7 @@ Download and **overwrite** these folders to your local UniCure directories:
    - Contains: Pre-trained model weights and configuration files
    - Local path: `your_project_path/UniCure/requirement/`
 
-> ⚠️ **Overwrite Notice**: Replace existing directories completely when copying <br> ⚠️ **Overwrite Notice**: Unzip requirement/model_weights/best_model.rar
+> ⚠️ **Overwrite Notice**: Replace existing directories completely when copying <br> ⚠️ **Unzip Notice**: Unzip requirement/model_weights/best_model.rar
 
 ### Step 2: Download UCE Pretraining Files
 Download these essential files to `requirement/UCE_pretraining_files/`:
