@@ -82,7 +82,8 @@ After downloading, confirm directory structure:
 UniCure/
 ├── data/
 │   ├── lincs2020/
-│   └── sciplex/
+│   ├── sciplex/
+│	└── PTC/
 └── requirement/
     ├── model_weights/
     └── UCE_pretraining_files/
