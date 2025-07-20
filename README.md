@@ -58,7 +58,7 @@ https://github.com/deepmodeling/Uni-Mol
 Download and **overwrite** these folders to your local UniCure directories:
 
 1. **[data folder](https://drive.google.com/drive/folders/1VPXl8h8iuhr8IdrAmAWQ9ldEHkWRCGWq?usp=drive_link)**  
-   - Contains: LINCS, SciPlex datasets, and metadata
+   - Contains: LINCS, SciPlex datasets, and PTC
    - Local path: `your_project_path/UniCure/data/`
 
 2. **[requirement folder](https://drive.google.com/drive/folders/1VPXl8h8iuhr8IdrAmAWQ9ldEHkWRCGWq?usp=drive_link)**  
@@ -66,6 +66,7 @@ Download and **overwrite** these folders to your local UniCure directories:
    - Local path: `your_project_path/UniCure/requirement/`
 
 > ⚠️ **Overwrite Notice**: Replace existing directories completely when copying
+> ⚠️ **Overwrite Notice**: Unzip requirement/model_weights/best_model.rar
 
 ### Step 2: Download UCE Pretraining Files
 Download these essential files to `requirement/UCE_pretraining_files/`:
@@ -91,7 +92,7 @@ UniCure/
         └── species_chrom.csv
 ```
 
-## Testing :zap:
+## Quick Testing :zap:
 ```
 python start_test.py
 ```
