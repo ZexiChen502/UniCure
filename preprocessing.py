@@ -1,27 +1,11 @@
-#%% UCE preprocessing
-import os
-
+# %% UCE preprocessing
 from torch.utils.data import DataLoader
-from tqdm import tqdm
-import torch
-import numpy as np
-import pandas as pd
-from accelerate import Accelerator
 import scanpy as sc
-from dataloader import CellDrugDataset, collate_fn, MultiDrugDataset, TahoeCellDrugDataset
-from utils import data_pairs_split, replace_ctrl_in_index, multi_data_pairs_split, tahoe_data_pairs_split
-import gc
-import concurrent.futures
-# import h5py
-# h5py.get_config().use_locking = False  # 禁用h5py的内存锁定
-# import h5py
-# h5py.get_config().set_file_image_opener(  # 调整HDF5缓存策略
-#     h5py.File,
-#     lambda name: h5py.File(name, 'r', rdcc_nbytes=1024**3)  # 1GB缓存
-# )
+from dataloader import *
+from utils import *
 
 
-#%%
+# %%
 def sample_cell_sentences(counts, batch_weights,
                           dataset_to_protein_embeddings,  # self.pe_idx_path
                           dataset_to_chroms,  # self.chroms_path
@@ -179,17 +163,18 @@ def process_data_to_df(df, gene_columns_start, pe_row_idxs, dataset_chroms, data
 
 
 def generate_esm2_emb(control_path=r"D:\sci_job\CureX\data\lincs2\lincs2020_control.parquet",
-                      gene_columns_start=4,    # 要减1
+                      gene_columns_start=4,  # 要减1
                       save_dir="./data/lincs2020/lincs2020_esm2_emb.parquet",
-                      dataset_name: str="lincs"):
+                      dataset_name: str = "lincs"):
 
     valid_datasets = {"lincs", "sciplex", "geo", "clinical", "tahoe"}
+
     if dataset_name not in valid_datasets:
         raise ValueError(f"Invalid dataset name. Expected one of {valid_datasets}")
 
     if not os.path.exists(save_dir):
         df = pd.read_parquet(control_path)
-        gene_list = df.columns[gene_columns_start:].tolist()
+        gene_list = df
         # ['SKIC2', 'BLTP2', 'SKIC8', 'DELEC1', 'H2AC25', 'RIGI', 'BMAL2', 'MYCNOS', 'MYL11']
         gene_mapping = {
             "AARS": "AARS1",
@@ -211,6 +196,7 @@ def generate_esm2_emb(control_path=r"D:\sci_job\CureX\data\lincs2\lincs2020_cont
             'BMAL2': "ARNTL2",
             'MYL11': "MYLPF"
         }
+
         gene_list = [gene_mapping.get(gene, gene) for gene in gene_list]
         gene_list = [gene.upper() for gene in gene_list]
 
@@ -221,6 +207,7 @@ def generate_esm2_emb(control_path=r"D:\sci_job\CureX\data\lincs2\lincs2020_cont
         species_to_pe = {
             species: torch.load(pe_dir) for species, pe_dir in protein_embeddings_paths.items()
         }
+
         species_to_pe = {species: {k.upper(): v for k, v in pe.items()} for species, pe in species_to_pe.items()}
         gene_to_chrom_pos = pd.read_csv("./requirement/UCE_pretraining_files/species_chrom.csv")
         gene_to_chrom_pos["spec_chrom"] = pd.Categorical(
@@ -233,7 +220,8 @@ def generate_esm2_emb(control_path=r"D:\sci_job\CureX\data\lincs2\lincs2020_cont
         df = df.drop(columns=[gene for gene in not_in_spec_pe_genes if gene in df.columns])
         offset = 13466
         print("pe_idx")
-        pe_row_idxs = torch.tensor([spec_pe_genes.index(k.upper()) + offset for k in gene_list]).long()  # self.pe_idx_path
+        pe_row_idxs = torch.tensor(
+            [spec_pe_genes.index(k.upper()) + offset for k in gene_list]).long()  # self.pe_idx_path
         print("spec_chrom")
         spec_chrom = gene_to_chrom_pos[gene_to_chrom_pos["species"] == "human"].set_index("gene_symbol")
         print("gene_chrom")
@@ -249,30 +237,30 @@ def generate_esm2_emb(control_path=r"D:\sci_job\CureX\data\lincs2\lincs2020_cont
         print(f"The file {save_dir} already exists. Skipping generation.")
 
 
-def esm2_preprocessing():
-    # lincs_path = './data/lincs2020/'
-    # lincs_folder = os.path.basename(os.path.normpath(lincs_path))
-    # new_string = lincs_folder + "_control.parquet"
-    # new_path = os.path.join(lincs_path, new_string)
-    generate_esm2_emb(control_path='./data/lincs2020/lincs2020_control.parquet',
-                      gene_columns_start=4,
-                      save_dir='./data/lincs2020/lincs2020_esm2_emb.parquet',
-                      dataset_name="lincs")
+# def esm2_preprocessing():
+#     # lincs_path = './data/lincs2020/'
+#     # lincs_folder = os.path.basename(os.path.normpath(lincs_path))
+#     # new_string = lincs_folder + "_control.parquet"
+#     # new_path = os.path.join(lincs_path, new_string)
+#     generate_esm2_emb(control_path='./data/lincs2020/lincs2020_control.parquet',
+#                       gene_columns_start=4,
+#                       save_dir='./data/lincs2020/lincs2020_esm2_emb.parquet',
+#                       dataset_name="lincs")
+#
+#     # sciplex3
+#     generate_esm2_emb(control_path='./data/sciplex3/sciplex3_control.parquet',
+#                       gene_columns_start=3,
+#                       save_dir='./data/sciplex3/sciplex3_esm2_emb.parquet',
+#                       dataset_name="sciplex")
+#
+#     # sciplex4
+#     generate_esm2_emb(control_path='./data/sciplex4/sciplex4_control.parquet',
+#                       gene_columns_start=5,
+#                       save_dir='./data/sciplex4/sciplex4_esm2_emb.parquet',
+#                       dataset_name="sciplex")
 
-    # sciplex3
-    generate_esm2_emb(control_path='./data/sciplex3/sciplex3_control.parquet',
-                      gene_columns_start=3,
-                      save_dir='./data/sciplex3/sciplex3_esm2_emb.parquet',
-                      dataset_name="sciplex")
 
-    # sciplex4
-    generate_esm2_emb(control_path='./data/sciplex4/sciplex4_control.parquet',
-                      gene_columns_start=5,
-                      save_dir='./data/sciplex4/sciplex4_esm2_emb.parquet',
-                      dataset_name="sciplex")
-
-
-def lincs_step2_preprocessing(seed: int):
+def lincs_step2_preprocessing_v2(seed: int):
     print("load data......", flush=True)
     lincs_df = pd.read_parquet('./data/lincs2020/lincs2020_merge_cid.parquet')
     print("Total data:", lincs_df.shape[0], flush=True)
@@ -312,60 +300,17 @@ def lincs_step2_preprocessing(seed: int):
                                                                          drug_doses_list,
                                                                          data_grouped,
                                                                          test_size=0.2, seed=seed)
-    train_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_train)
-    val_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_val)
+    train_dataset = CellDrugDataset_v2(cell_embeddings, drug_embeddings, data_grouped, data_pairs_train,
+                                       max_sample_size=600, dose_mode='concat')
+    val_dataset = CellDrugDataset_v2(cell_embeddings, drug_embeddings, data_grouped, data_pairs_val,
+                                     max_sample_size=600, dose_mode='concat')
 
-    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
-    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn)
-    return train_loader, val_loader
+    train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True,
+                              collate_fn=collate_fn_batch, num_workers=8, pin_memory=True)
 
+    val_loader = DataLoader(val_dataset, batch_size=32, shuffle=False,
+                            collate_fn=collate_fn_batch, num_workers=4, pin_memory=True)
 
-def lincs_benchmark_preprocessing(seed: int):
-    print("load data......", flush=True)
-    lincs_df = pd.read_parquet('./data/lincs2020/lincs2020_benchmark.parquet')
-    print("Total data:", lincs_df.shape[0], flush=True)
-
-    cid_types_list = list(set(lincs_df['new_cid']))
-    print("Total cids:", len(cid_types_list), flush=True)
-
-    cell_types_list = list(set(lincs_df['cell_iname']))
-    print("Total cells:", len(cell_types_list), flush=True)
-
-    drug_doses_list = list(set(lincs_df['pert_idose']) - {0})
-    drug_names_list = list(set(lincs_df['cmap_name']) - {'control'})
-    print("Total drugs:", len(drug_names_list), flush=True)
-
-    drug_embeddings = pd.read_parquet('./data/lincs2020/lincs2020_unimol_emb.parquet')
-    missing_drugs = [item for item in drug_names_list if item not in drug_embeddings.index]
-    if missing_drugs:
-        print("The following drugs do not have unimol_emb:", len(missing_drugs), flush=True)
-        drug_names_list = [item for item in drug_names_list if item not in missing_drugs]
-    else:
-        print("All drugs have unimol_emb.", flush=True)
-
-    cell_embeddings = pd.read_parquet('./data/lincs2020/lincs2020_uce_lora_emb.parquet')
-    missing_cells = [item for item in cid_types_list if item not in cell_embeddings.index]
-    if missing_cells:
-        print("The following cids do not have uce_emb:", len(missing_cells), flush=True)
-        cid_types_list = [item for item in cid_types_list if item not in missing_cells]
-    else:
-        print("All cids have uce_emb.", flush=True)
-
-    print("grouping by cid, drug, and dose.......", flush=True)
-    lincs_df = lincs_df.drop(columns=['cell_iname'])
-    data_grouped = lincs_df.groupby(['new_cid', 'cmap_name', 'pert_idose'])
-
-    print("spliting train and val datasets.......", flush=True)
-    data_pairs_train, data_pairs_val, data_pairs_test = data_pairs_split(cid_types_list, drug_names_list,
-                                                                         drug_doses_list,
-                                                                         data_grouped,
-                                                                         test_size=0.2, seed=seed,
-                                                                         dataset_name="lincs_benchmark")
-    train_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_train)
-    val_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_val)
-
-    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
-    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn)
     return train_loader, val_loader
 
 
@@ -413,63 +358,55 @@ def lincs_test_preprocessing(seed: int):
                                                                          data_grouped,
                                                                          test_size=0.2, seed=seed)
     print(len(data_pairs_train), len(data_pairs_val), len(data_pairs_test))
+
     test_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_test)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
+
     return test_loader, lincs_gene
 
 
-def lincs_test_benchmark_preprocessing(seed: int):
-    print("load data......", flush=True)
-    lincs_df = pd.read_parquet('./data/lincs2020/lincs2020_benchmark.parquet')
-    print("Total data:", lincs_df.shape[0], flush=True)
+def lincs_test_preprocessing_v2(seed: int, max_size=10):
+    print("load data for testing......", flush=True)
+    lincs_df = pd.read_parquet('./data/lincs2020/lincs2020_merge_cid.parquet')
 
     selected_columns = lincs_df.iloc[:, 4:]
     lincs_gene = selected_columns.columns.tolist()
 
     cid_types_list = list(set(lincs_df['new_cid']))
-    print("Total cids:", len(cid_types_list), flush=True)
-
-    cell_types_list = list(set(lincs_df['cell_iname']))
-    print("Total cells:", len(cell_types_list), flush=True)
-
     drug_doses_list = list(set(lincs_df['pert_idose']) - {0})
     drug_names_list = list(set(lincs_df['cmap_name']) - {'control'})
-    print("Total drugs:", len(drug_names_list), flush=True)
 
     drug_embeddings = pd.read_parquet('./data/lincs2020/lincs2020_unimol_emb.parquet')
     missing_drugs = [item for item in drug_names_list if item not in drug_embeddings.index]
     if missing_drugs:
-        print("The following drugs do not have unimol_emb:", len(missing_drugs), flush=True)
         drug_names_list = [item for item in drug_names_list if item not in missing_drugs]
-    else:
-        print("All drugs have unimol_emb.", flush=True)
 
     cell_embeddings = pd.read_parquet('./data/lincs2020/lincs2020_uce_lora_emb.parquet')
     missing_cells = [item for item in cid_types_list if item not in cell_embeddings.index]
     if missing_cells:
-        print("The following cids do not have uce_emb:", len(missing_cells), flush=True)
         cid_types_list = [item for item in cid_types_list if item not in missing_cells]
-    else:
-        print("All cids have uce_emb.", flush=True)
 
-    print("grouping by cid, drug, and dose.......", flush=True)
+    print("grouping and splitting.......", flush=True)
     lincs_df = lincs_df.drop(columns=['cell_iname'])
     data_grouped = lincs_df.groupby(['new_cid', 'cmap_name', 'pert_idose'])
 
-    print("spliting train and val datasets.......", flush=True)
+    _, _, data_pairs_test = data_pairs_split(cid_types_list, drug_names_list,
+                                             drug_doses_list,
+                                             data_grouped,
+                                             test_size=0.2, seed=seed)
 
-    data_pairs_train, data_pairs_val, data_pairs_test = data_pairs_split(cid_types_list, drug_names_list,
-                                                                         drug_doses_list,
-                                                                         data_grouped,
-                                                                         test_size=0.2, seed=seed,
-                                                                         dataset_name="lincs_benchmark")
+    print(f"Test pairs count: {len(data_pairs_test)}")
 
-    test_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_test)
-    test_loader = DataLoader(test_dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
+    test_dataset = CellDrugDataset_v2(cell_embeddings, drug_embeddings, data_grouped, data_pairs_test,
+                                      max_sample_size=max_size)
+
+    test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False,
+                             collate_fn=collate_fn_batch, num_workers=4, pin_memory=True)
+
     return test_loader, lincs_gene
 
 
-def sciplex3_preprocessing(seed: int):
+def sciplex3_preprocessing_v2(seed: int):
     print("load Sciplex3 data......")
     sciplex_df = pd.read_parquet("./data/sciplex/sciplex3.parquet")
     sciplex_df['drug'] = sciplex_df['drug'].replace('CTRL', 'control')
@@ -511,148 +448,70 @@ def sciplex3_preprocessing(seed: int):
                                                                          data_grouped, test_size=0.2, seed=seed,
                                                                          dataset_name='sciplex3')
 
-    train_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_train, scaler=True)
-    val_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_val, scaler=True)
+    train_dataset = CellDrugDataset_v2(cell_embeddings, drug_embeddings, data_grouped, data_pairs_train,
+                                       max_sample_size=512, scaler=True)
+    val_dataset = CellDrugDataset_v2(cell_embeddings, drug_embeddings, data_grouped, data_pairs_val,
+                                     max_sample_size=512, scaler=True)
 
-    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
-    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn)
+    train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True,
+                              collate_fn=collate_fn_batch, num_workers=8, pin_memory=True)
+
+    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False,
+                            collate_fn=collate_fn_batch, num_workers=4, pin_memory=True)
 
     return train_loader, val_loader
 
 
-def sciplex3_test_preprocessing(seed: int):
-    print("load Sciplex3 data......")
+def sciplex3_test_preprocessing_v2(seed: int, max_size=512):
+    print("load Sciplex3 data for testing......", flush=True)
     sciplex_df = pd.read_parquet("./data/sciplex/sciplex3.parquet")
 
     selected_columns = sciplex_df.iloc[:, 3:]
     sciplex_gene = selected_columns.columns.tolist()
 
     sciplex_df['drug'] = sciplex_df['drug'].replace('CTRL', 'control')
-    print("Total data:", sciplex_df.shape[0])
+
     cell_types_list = list(set(sciplex_df['cell']))
-    print("Total cells:", len(cell_types_list))
     drug_doses_list = list(set(sciplex_df['dose']) - {0})
     drug_names_list = list(set(sciplex_df['drug']) - {'control'})
-    print("Total drugs:", len(drug_names_list))
+
+    print(f"Total data: {sciplex_df.shape[0]}, Cells: {len(cell_types_list)}, Drugs: {len(drug_names_list)}",
+          flush=True)
+
 
     drug_embeddings = pd.read_parquet("./data/sciplex/sciplex3_unimol_emb.parquet")
+
     drug_embeddings = replace_ctrl_in_index(drug_embeddings)
+
     missing_drugs = [item for item in drug_names_list if item not in drug_embeddings.index]
     if missing_drugs:
-        print("The following drugs do not have unimol_emb:", len(missing_drugs))
-        # missing_drugs_df = pd.DataFrame(missing_drugs, columns=['missing_drugs'])
-        # missing_drugs_df.to_csv('sciplex_miss_drugs.csv', index=False)
+        print(f"Drugs missing embeddings: {len(missing_drugs)}", flush=True)
         drug_names_list = [item for item in drug_names_list if item not in missing_drugs]
-    else:
-        print("All drugs have unimol_emb.")
 
     cell_embeddings = pd.read_parquet("./data/sciplex/sciplex3_uce_emb.parquet")
     missing_cells = [item for item in cell_types_list if item not in cell_embeddings.index]
     if missing_cells:
-        print("The following cells do not have uce_emb:", len(missing_cells))
-        # missing_cells_df = pd.DataFrame(missing_cells, columns=['missing_cells'])
-        # missing_cells_df.to_csv('sciplex_miss_cells.csv', index=False)
+        print(f"Cells missing embeddings: {len(missing_cells)}", flush=True)
         cell_types_list = [item for item in cell_types_list if item not in missing_cells]
-    else:
-        print("All cells have uce_emb.")
 
-    print("grouping by cell, drug, and dose.......")
+    print("grouping and splitting.......", flush=True)
+
     data_grouped = sciplex_df.groupby(['cell', 'drug', 'dose'])
 
-    print("spliting train and val datasets.......")
-    data_pairs_train, data_pairs_val, data_pairs_test = data_pairs_split(cell_types_list, drug_names_list,
-                                                                         drug_doses_list,
-                                                                         data_grouped, test_size=0.2, seed=seed,
-                                                                         dataset_name='sciplex3')
+    _, _, data_pairs_test = data_pairs_split(cell_types_list, drug_names_list,
+                                             drug_doses_list,
+                                             data_grouped, test_size=0.2, seed=seed,
+                                             dataset_name='sciplex3')
 
-    test_dataset = CellDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_test, scaler=True)
-    test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn)
+    print(f"Test pairs count: {len(data_pairs_test)}", flush=True)
+
+    test_dataset = CellDrugDataset_v2(cell_embeddings, drug_embeddings, data_grouped, data_pairs_test,
+                                      max_sample_size=max_size, scaler=True)
+
+    test_loader = DataLoader(test_dataset, batch_size=16, shuffle=False,
+                             collate_fn=collate_fn_batch, num_workers=4, pin_memory=True)
+
     return test_loader, sciplex_gene
-
-
-def load_h5ad_file(filename):
-    """线程安全的h5ad加载函数"""
-    filepath = os.path.join("./data/tahoe-100/", filename)
-    adata = sc.read_h5ad(filepath)
-    return filename, adata.X  # 直接返回稀疏矩阵
-
-
-def tahoe_preprocessing(seed: int):
-    print("Loading tahoe-100M data......")
-    # Load metadata
-    tahoe_meta_path = "./data/tahoe-100-meta/all_file_metadata.csv"
-    tahoe_meta = pd.read_csv(tahoe_meta_path)
-    tahoe_meta['drug_name'] = tahoe_meta['drug_name'].replace('DMSO_TF', 'control')
-
-    global_stats = np.load("./data/tahoe-100-meta/global_stats.npz")
-    global_mean = global_stats['mean']  # shape: (n_genes,)
-    global_var = global_stats['var']    # shape: (n_genes,)
-    global_stats.close()  # 显式关闭文件
-
-    # 过滤掉drug为control的数据
-    filtered_meta = tahoe_meta[tahoe_meta['drug_name'] != 'control']
-
-    print("Total paired (non-control):", filtered_meta.shape[0])
-    print("Total cells:", len(filtered_meta['cell_name'].unique()))
-    print("Total drugs:", len(filtered_meta['drug_name'].unique()))
-
-    # 加载嵌入数据
-    drug_embeddings = pd.read_parquet("./data/tahoe-100-control/tohae_unimol_emb.parquet")
-    cell_embeddings = pd.read_parquet("./data/tahoe-100-control/tahoe_uce_emb_all.parquet")
-    cell_untreated = pd.read_parquet("./data/tahoe-100-control/tahoe_control.parquet")
-    cell_untreated_dict = {
-        cell: df.iloc[:, 4:].values
-        for cell, df in cell_untreated.groupby("cell_name")
-    }
-    # 构建data_pairs_list（已过滤control）
-    data_pairs_list = list(
-        zip(
-            filtered_meta["cell_name"],
-            filtered_meta["drug_name"],
-            filtered_meta["concentration"],
-            filtered_meta["filename"]
-        )
-    )
-
-    # === 核心优化：预加载所有h5ad文件到内存 ===
-    # 获取所有唯一文件名（避免重复加载）
-    unique_filenames = list(set([filename for (_, _, _, filename) in data_pairs_list]))
-
-    # 预加载到字典 {filename: gene_exprs}
-    file_data_dict = {}
-    for filename in tqdm(unique_filenames, desc="Preloading h5ad files"):
-        adata = sc.read_h5ad(os.path.join("./data/tahoe-100/", filename))
-        sc.pp.log1p(adata)  # 关键一步：直接在稀疏矩阵上做 log1p
-        file_data_dict[filename] = adata.X  # 不转换为密集数组
-        # 显式清理
-        # del adata  # 删除对象引用
-        # gc.collect()  # 强制垃圾回收
-
-    # 划分数据集
-    data_pairs_train, data_pairs_val, _ = tahoe_data_pairs_split(
-        data_pairs_list, test_size=0.2, seed=seed, dataset_name='tahoe'
-    )
-
-    # 创建数据集（传入预加载的file_data_dict）
-    train_dataset = TahoeCellDrugDataset(
-        data_pairs_train, cell_embeddings, drug_embeddings, cell_untreated_dict,
-        file_data_dict=file_data_dict, scaler=False,
-        global_mean=global_mean,
-        global_var=global_var
-    )
-
-    val_dataset = TahoeCellDrugDataset(
-        data_pairs_val, cell_embeddings, drug_embeddings, cell_untreated_dict,
-        file_data_dict=file_data_dict, scaler=False,
-        global_mean=global_mean,
-        global_var=global_var
-    )
-
-    # 创建DataLoader（batch_size可后续调整）
-    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
-    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn)
-
-    return train_loader, val_loader
 
 
 def sciplex4_preprocessing(seed: int):
@@ -681,17 +540,22 @@ def sciplex4_preprocessing(seed: int):
 
     print("spliting train and val datasets.......")
     data_pairs_train, data_pairs_val, data_pairs_test = multi_data_pairs_split(cell_types_list, drug1_names_list,
-                                                                                 drug1_doses_list,
-                                                                                 drug2_names_list, drug2_doses_list,
-                                                                                 data_grouped, test_size=0.2, seed=seed,
-                                                                                 dataset_name='sciplex4')
+                                                                               drug1_doses_list,
+                                                                               drug2_names_list, drug2_doses_list,
+                                                                               data_grouped, test_size=0.2, seed=seed,
+                                                                               dataset_name='sciplex4')
 
     data_grouped = sciplex_df.groupby(['cell', 'drug_1', 'dose_1', 'drug_2', 'dose_2'])
+
     train_dataset = MultiDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_train, scaler=True)
     val_dataset = MultiDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_val, scaler=True)
 
-    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True, collate_fn=collate_fn)
-    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn)
+    train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True,
+                              collate_fn=collate_fn, num_workers=8, pin_memory=True)
+
+    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False,
+                            collate_fn=collate_fn, num_workers=4, pin_memory=True)
+
     return train_loader, val_loader
 
 
@@ -735,17 +599,4 @@ def sciplex4_test_preprocessing(seed: int):
     test_dataset = MultiDrugDataset(cell_embeddings, drug_embeddings, data_grouped, data_pairs_test, scaler=True)
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False, collate_fn=collate_fn)
     return test_loader, sciplex_gene
-
-
-
-
-
-
-
-
-
-
-
-
-
 
