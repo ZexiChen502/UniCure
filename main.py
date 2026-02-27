@@ -28,7 +28,7 @@ def train_lincs_step1(seed, accelerator):
 def train_lincs_step2(seed):
     train_loader, val_loader = lincs_step2_preprocessing_v2(seed)
 
-    cureall_model = load_stage1_model(path=f'./result/11/lincs2020/best_original_state_model.pth')
+    cureall_model = load_stage1_model(path=f'./result/11/lincs2020/best_stage_1_model.pth')
 
     mmd_loss_fn = MMDLoss(kernel_type='rbf')
     trainable_parameters = get_trainable_parameters(cureall_model)
