@@ -4,6 +4,7 @@ from utils import *
 from model import *
 from accelerate import Accelerator
 from loss import MMDLoss
+import argparse
 
 
 def train_lincs_step1(seed, accelerator):
@@ -29,7 +30,7 @@ def train_lincs_step2(seed):
 
     cureall_model = load_stage1_model(path=f'./result/11/lincs2020/best_original_state_model.pth')
 
-    mmd_loss_fn = MMDLoss(kernel_type='rbf', normalize=True)
+    mmd_loss_fn = MMDLoss(kernel_type='rbf')
     trainable_parameters = get_trainable_parameters(cureall_model)
 
     train_perturbation_delta_model_v2(cureall_model, mmd_loss_fn, trainable_parameters, train_loader, val_loader,
@@ -102,17 +103,40 @@ def test_sciplex4(seed):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="UniCure Pipeline Execution")
+    parser.add_argument('--seed', type=int, default=11, help='Random seed')
 
-    seed = 11
-    accelerator = Accelerator()
-    train_lincs_step1(seed, accelerator)
+    # 添加各个阶段的控制开关
+    parser.add_argument('--run_lincs1', action='store_true', help='Run LINCS Step 1')
+    parser.add_argument('--run_lincs2', action='store_true', help='Run LINCS Step 2 (Train & Test)')
+    parser.add_argument('--run_sciplex3', action='store_true', help='Run Sciplex 3 (Train & Test)')
+    parser.add_argument('--run_sciplex4', action='store_true', help='Run Sciplex 4 (Train & Test)')
+    parser.add_argument('--run_all', action='store_true', help='Run all stages sequentially')
 
-    train_lincs_step2(seed)
-    test_lincs(seed)
+    args = parser.parse_args()
+    seed = args.seed
 
-    train_sciplex3(seed)
-    test_sciplex3(seed)
+    # 执行逻辑
+    if args.run_lincs1 or args.run_all:
+        print("=== Starting LINCS Step 1 ===")
+        accelerator = Accelerator()
+        train_lincs_step1(seed, accelerator)
 
-    train_sciplex4(seed)
-    test_sciplex4(seed)
+    if args.run_lincs2 or args.run_all:
+        print("=== Starting LINCS Step 2 ===")
+        train_lincs_step2(seed)
+        test_lincs(seed)
+
+    if args.run_sciplex3 or args.run_all:
+        print("=== Starting Sciplex 3 ===")
+        train_sciplex3(seed)
+        test_sciplex3(seed)
+
+    if args.run_sciplex4 or args.run_all:
+        print("=== Starting Sciplex 4 ===")
+        train_sciplex4(seed)
+        test_sciplex4(seed)
+
+    if not (args.run_lincs1 or args.run_lincs2 or args.run_sciplex3 or args.run_sciplex4 or args.run_all):
+        print("No execution flag provided. Please use flags like --run_lincs1 or --run_all.")
 
