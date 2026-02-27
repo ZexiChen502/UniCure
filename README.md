@@ -127,7 +127,7 @@ python main.py --run_lincs1
 ```
 
 **2. LINCS Stage 2 (Train & Test):**
-*(Note: Ensure Stage 1 is completed before running this, as it requires the `best_stage_1_model.pth`)*
+*(Note: Ensure Stage 1 is completed and cell embedding is generated (`generate_emb.py`) before running this)*
 ```bash
 python main.py --run_lincs2
 ```
