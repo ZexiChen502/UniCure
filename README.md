@@ -66,7 +66,7 @@ Download and **overwrite** these folders to your local UniCure directories:
    - Local path: `your_project_path/UniCure/requirement/`
 
 3. **[model weights](https://drive.google.com/drive/folders/1qZ4QwEXST_FcIZDTizMu7aH-OXpdc_CB?usp=drive_link)**  
-   - Contains: Pre-trained model weights
+   - Contains: Pre-trained model weights & Dataset splits (Training, Validation, and Test sets)
    - Local path: `your_project_path/UniCure/result/`
    
 > ⚠️ **Overwrite Notice**: Replace existing directories completely when copying <br> ⚠️ **Unzip Notice**: Unzip Unicure_best_model.rar
