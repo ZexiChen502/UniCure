@@ -30,7 +30,7 @@ generate_esm2_emb(control_path='./data/sciplex/sciplex3_control.parquet',
 
 uce_emb(esm2_emb_df_path='./data/sciplex/sciplex3_esm2_emb.parquet',
         esm2_control_df_path='./data/sciplex/sciplex3_control.parquet',
-        model_path=None, # Set to None to use pre-trained UCE without fine-tuning
+        model_path=None,  # Set to None to use pre-trained UCE without fine-tuning
         uce_emb_df_path='./data/sciplex/sciplex3_uce_lora_emb.parquet',
         index_name='cell')
 

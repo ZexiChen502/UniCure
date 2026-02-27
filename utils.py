@@ -249,6 +249,21 @@ def load_UniCurePretrainsc4(path=None, output_size=1923):
     return UniCureFTsc4_model
 
 
+def load_UniCureFT(path=None):
+    UniCure_model = UniCure()
+
+    if path is not None:
+        pretrained_state_dict = torch.load(path, map_location="cpu")
+        UniCure_model.load_state_dict(pretrained_state_dict, strict=False)
+
+    UniCureFT_model = UniCureFT(UniCure_model)
+
+    for param in UniCureFT_model.pretrained_model.parameters():
+        param.requires_grad = False
+
+    return UniCureFT_model
+
+
 def get_trainable_parameters(model):
     return filter(lambda p: p.requires_grad, model.parameters())
 
@@ -261,7 +276,7 @@ def set_seed(seed):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.benchmark = Falseq
 
 
 # %% data_pairs_split

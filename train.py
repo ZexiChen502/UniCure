@@ -11,7 +11,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from accelerate.utils import gather_object
 from tqdm.auto import tqdm
 import torch.distributed as dist
-from utils import set_seed
+from utils import *
 from torch import nn
 from scipy.stats import spearmanr, pearsonr
 from loss import MMDLoss
@@ -955,3 +955,217 @@ def test_Multiperturbation_model(model, test_loader, seed, gene_list, device=Non
     predictions_df.to_csv(os.path.join(save_dir, 'predictions.csv'), index=False)
     real_outputs_df.to_csv(os.path.join(save_dir, 'real_outputs.csv'), index=False)
 
+
+def finetune(model_path, cell_embed, drug_embed, perturbed, control, device, num_epochs, train_set_rate, seed,
+             save_dir):
+    if device is None:
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+
+    # 数据准备
+    num_samples = cell_embed.shape[0]
+    all_indices = np.arange(num_samples)
+
+    cell_embed_train, cell_embed_val, drug_embed_train, drug_embed_val, \
+        perturbed_train, perturbed_val, control_train, control_val, \
+        train_indices, val_indices = \
+        train_test_split(
+            cell_embed, drug_embed, perturbed, control, all_indices,
+            test_size=(1 - train_set_rate),
+            random_state=seed
+        )
+
+    # Tensor 转换
+    # 封装函数以减少重复代码
+    def to_tensor(arr):
+        return torch.tensor(arr, dtype=torch.float32)
+
+    train_dataset = TensorDataset(to_tensor(cell_embed_train), to_tensor(drug_embed_train),
+                                  to_tensor(perturbed_train), to_tensor(control_train))
+    val_dataset = TensorDataset(to_tensor(cell_embed_val), to_tensor(drug_embed_val),
+                                to_tensor(perturbed_val), to_tensor(control_val))
+
+    train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=3, shuffle=False)
+
+    # Load Model
+    model = load_UniCureFT(path=model_path)
+    model.to(device)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    criterion_mse = nn.MSELoss()  # 基础 MSE Loss
+
+    # --- Metrics 记录列表 ---
+    history = {
+        'train_total_loss': [],
+        'train_mse_loss': [],
+        'train_cosine_loss': [],
+        'train_abs_pcc': [],
+        'train_delta_pcc': [],
+        'val_total_loss': [],
+        'val_mse_loss': [],
+        'val_cosine_loss': [],
+        'val_abs_pcc': [],
+        'val_delta_pcc': []
+    }
+
+    # 保存目录
+    save_dir = os.path.join(save_dir, str(seed))
+    os.makedirs(save_dir, exist_ok=True)
+    pd.DataFrame(train_indices, columns=['index']).to_csv(os.path.join(save_dir, 'train_indices.csv'), index=False)
+    pd.DataFrame(val_indices, columns=['index']).to_csv(os.path.join(save_dir, 'val_indices.csv'), index=False)
+    print(f"Split indices saved to {save_dir}")
+
+    # Early stopping
+    patience = 20
+    best_val_score = -float('inf')  # 使用 Delta PCC 作为早停指标可能更好，这里综合考虑
+    best_model_state = None
+    epochs_no_improve = 0
+
+    for epoch in range(num_epochs):
+        # ================= TRAIN =================
+        model.train()
+        epoch_meters = {k: [] for k in ['total_loss', 'mse_loss', 'cosine_loss', 'abs_pcc', 'delta_pcc']}
+
+        for cell_inputs, drug_inputs, targets, control in train_loader:
+            cell_inputs, drug_inputs, targets, control = \
+                cell_inputs.to(device), drug_inputs.to(device), targets.to(device), control.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(cell_inputs, drug_inputs)
+
+            # 1. 计算 MSE Loss
+            loss_mse = criterion_mse(outputs, targets)
+
+            # 2. 计算 Cosine Loss (针对 Delta)
+            # Delta = 扰动后 - 对照组
+            delta_pred = outputs - control
+            delta_true = targets - control
+
+            # cosine_similarity 返回形状为 (batch_size,)，值域 [-1, 1]
+            # dim=1 表示沿着特征维度计算
+            cos_sim = F.cosine_similarity(delta_pred, delta_true, dim=1)
+            loss_cosine = 1.0 - cos_sim.mean()
+
+            # 3. 总 Loss 回传
+            loss = loss_mse + loss_cosine
+
+            loss.backward()
+            optimizer.step()
+
+            # --- 计算指标 (Numpy) ---
+            nb_sample = outputs.detach().cpu().numpy()
+            y_true = targets.detach().cpu().numpy()
+            ctrl_np = control.detach().cpu().numpy()
+
+            delta_sample_np = nb_sample - ctrl_np
+            delta_true_np = y_true - ctrl_np
+
+            # 批量计算 Pearson
+            batch_abs_pcc = []
+            batch_delta_pcc = []
+
+            for i in range(nb_sample.shape[0]):
+                # Absolute PCC
+                if np.std(nb_sample[i]) > 1e-9 and np.std(y_true[i]) > 1e-9:
+                    batch_abs_pcc.append(pearsonr(y_true[i], nb_sample[i])[0])
+                else:
+                    batch_abs_pcc.append(0.0)
+
+                # Delta PCC (Direction correctness)
+                if np.std(delta_sample_np[i]) > 1e-9 and np.std(delta_true_np[i]) > 1e-9:
+                    batch_delta_pcc.append(pearsonr(delta_true_np[i], delta_sample_np[i])[0])
+                else:
+                    batch_delta_pcc.append(0.0)
+
+            # 记录本 batch 数据
+            epoch_meters['total_loss'].append(loss.item())
+            epoch_meters['mse_loss'].append(loss_mse.item())
+            epoch_meters['cosine_loss'].append(loss_cosine.item())
+            epoch_meters['abs_pcc'].append(np.mean(batch_abs_pcc))
+            epoch_meters['delta_pcc'].append(np.mean(batch_delta_pcc))
+
+        # 汇总 Epoch 训练数据
+        for k in ['total_loss', 'mse_loss', 'cosine_loss', 'abs_pcc', 'delta_pcc']:
+            history[f'train_{k}'].append(np.mean(epoch_meters[k]))
+
+        print(f"Epoch [{epoch + 1}/{num_epochs}] Train | "
+              f"TLoss: {history['train_total_loss'][-1]:.4f} "
+              f"(MSE: {history['train_mse_loss'][-1]:.4f}, Cos: {history['train_cosine_loss'][-1]:.4f}) | "
+              f"PCC: {history['train_abs_pcc'][-1]:.4f}, D-PCC: {history['train_delta_pcc'][-1]:.4f}", flush=True)
+
+        # ================= VAL =================
+        model.eval()
+        epoch_meters_val = {k: [] for k in ['total_loss', 'mse_loss', 'cosine_loss', 'abs_pcc', 'delta_pcc']}
+
+        with torch.no_grad():
+            for cell_inputs, drug_inputs, targets, control in val_loader:
+                cell_inputs, drug_inputs, targets, control = \
+                    cell_inputs.to(device), drug_inputs.to(device), targets.to(device), control.to(device)
+
+                outputs = model(cell_inputs, drug_inputs)
+
+                # Loss 计算
+                loss_mse = criterion_mse(outputs, targets)
+
+                delta_pred = outputs - control
+                delta_true = targets - control
+                cos_sim = F.cosine_similarity(delta_pred, delta_true, dim=1)
+                loss_cosine = 1.0 - cos_sim.mean()
+
+                loss = loss_mse + loss_cosine
+
+                # Metrics 计算
+                nb_sample = outputs.cpu().numpy()
+                y_true = targets.cpu().numpy()
+                ctrl_np = control.cpu().numpy()
+                delta_sample_np = nb_sample - ctrl_np
+                delta_true_np = y_true - ctrl_np
+
+                batch_abs_pcc = []
+                batch_delta_pcc = []
+                for i in range(nb_sample.shape[0]):
+                    if np.std(nb_sample[i]) > 1e-9 and np.std(y_true[i]) > 1e-9:
+                        batch_abs_pcc.append(pearsonr(y_true[i], nb_sample[i])[0])
+                    else:
+                        batch_abs_pcc.append(0.0)
+
+                    if np.std(delta_sample_np[i]) > 1e-9 and np.std(delta_true_np[i]) > 1e-9:
+                        batch_delta_pcc.append(pearsonr(delta_true_np[i], delta_sample_np[i])[0])
+                    else:
+                        batch_delta_pcc.append(0.0)
+
+                epoch_meters_val['total_loss'].append(loss.item())
+                epoch_meters_val['mse_loss'].append(loss_mse.item())
+                epoch_meters_val['cosine_loss'].append(loss_cosine.item())
+                epoch_meters_val['abs_pcc'].append(np.mean(batch_abs_pcc))
+                epoch_meters_val['delta_pcc'].append(np.mean(batch_delta_pcc))
+
+        # 汇总 Epoch 验证数据
+        for k in ['total_loss', 'mse_loss', 'cosine_loss', 'abs_pcc', 'delta_pcc']:
+            history[f'val_{k}'].append(np.mean(epoch_meters_val[k]))
+
+        curr_val_delta_pcc = history['val_delta_pcc'][-1]
+
+        print(f"Epoch [{epoch + 1}/{num_epochs}] Val   | "
+              f"TLoss: {history['val_total_loss'][-1]:.4f} "
+              f"(MSE: {history['val_mse_loss'][-1]:.4f}, Cos: {history['val_cosine_loss'][-1]:.4f}) | "
+              f"PCC: {history['val_abs_pcc'][-1]:.4f}, D-PCC: {curr_val_delta_pcc:.4f}", flush=True)
+
+        # Early Stopping: 优先优化 Delta PCC (也可以改成 total_loss)
+        if curr_val_delta_pcc > best_val_score:
+            best_val_score = curr_val_delta_pcc
+            best_model_state = model.state_dict()
+            epochs_no_improve = 0
+            torch.save(best_model_state, os.path.join(save_dir, 'best_model.pth'))
+        else:
+            epochs_no_improve += 1
+
+        if epochs_no_improve == patience:
+            print(f"Early stopping triggered at epoch {epoch + 1}")
+            break
+
+    # 保存训练记录
+    result_df = pd.DataFrame(history)
+    result_df.to_csv(os.path.join(save_dir, 'finetune_training_results.csv'), index=False)
+
+    return best_val_score

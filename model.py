@@ -244,3 +244,21 @@ class UniCureFTsc(nn.Module):
         out = self.adaptor(out)
         return out
 
+
+class UniCureFT(nn.Module):
+    def __init__(self, pretrained_model, hidden_dim: int = 1000, output_size: int = 978, dropout_rate: float = 0.2):
+        super(UniCureFT, self).__init__()
+        self.pretrained_model = pretrained_model
+
+        self.adaptor = nn.Sequential(
+            nn.Linear(output_size, hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout_rate),
+            nn.Linear(hidden_dim, output_size),
+        )
+
+    def forward(self, cell, drug):   # alpha: Coefficient [0, 1] range, 0 = closer to cell line or less fine-tuning data, 1 = closer to in vivo and more fine-tuning data.
+        out = self.pretrained_model("pertrub_forward", cell, drug)  # Pass through the pre-trained model
+        out = self.adaptor(out)
+        return out
+
