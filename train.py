@@ -11,7 +11,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from accelerate.utils import gather_object
 from tqdm.auto import tqdm
 import torch.distributed as dist
-from utils import set_seed, load_UniCureFT, load_UniCureFT2
+from utils import set_seed
 from torch import nn
 from scipy.stats import spearmanr, pearsonr
 from loss import MMDLoss
