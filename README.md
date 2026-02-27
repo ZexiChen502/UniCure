@@ -149,7 +149,7 @@ By default, the pipeline uses `seed=11`. You can easily change the random seed f
 python main.py --run_sciplex3 --seed 42
 ```
 
-## Cell Embedding Generation (After Stage 1 Training):fire:
+## Cell Embedding Generation (After Stage 1 Training) :fire:
 ```
 python generate_emb.py
 ```
