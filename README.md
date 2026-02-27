@@ -1,4 +1,4 @@
-# UniCure: A Foundation Model for Predicting Personalized Cancer Therapy Response 💊
+# UniCure: A Multi-Modal Model for Predicting Personalized Cancer Therapy Response 💊
 
 ## Overview 🌟
 **UniCure is a multi-modal model integrating omics (UCE) and chemical (Uni-mol) foundation models to predict transcriptomic drug responses across diverse cellular contexts.**
