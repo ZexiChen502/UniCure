@@ -26,7 +26,7 @@ perturbed_luad = np.log2(perturbed_luad + 1)
 sample_embed_df_luad = pd.read_parquet("./data/PTC/LUAD/PTC_luad_control_uce_lora_emb.parquet")
 cell_embed_luad = np.tile(sample_embed_df_luad.values, (40, 1))
 
-drug_embed_df_luad = pd.read_csv("./data/PTC/drug_message_unimol.csv", index_col=0)  # 不动
+drug_embed_df_luad = pd.read_csv("./data/PTC/drug_embedding_unimol.csv", index_col=0)  # 不动
 drug_embed_luad = drug_embed_df_luad.loc[perturbed_df_luad['Drug'], :].values
 
 # 读取 BLCA 数据
@@ -41,7 +41,7 @@ perturbed_blca = np.log2(perturbed_blca + 1)
 sample_embed_df_blca = pd.read_parquet("./data/PTC/BLCA/PTC_blca_control_uce_lora_emb.parquet")
 cell_embed_blca = np.tile(sample_embed_df_blca.values, (40, 1))
 
-drug_embed_df_blca = pd.read_csv("./data/PTC/BLCA/drug_message_unimol.csv", index_col=0)  # 不动
+drug_embed_df_blca = pd.read_csv("./data/PTC/drug_embedding_unimol.csv", index_col=0)  # 不动
 drug_embed_blca = drug_embed_df_blca.loc[perturbed_df_blca['Drug'], :].values
 
 # TNBC
