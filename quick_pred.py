@@ -1,3 +1,23 @@
+"""
+Quick Prediction Script for UniCure
+
+This script performs a quick test of the UniCure model by predicting the transcriptomic response 
+(gene expression) of a specific cell line to a specific drug perturbation.
+
+Input:
+- Control File (`./data/test/Test.parquet`): Contains the unperturbed (baseline) gene expression 
+  profile of the cell line (e.g., ABY001_NCIH596).
+- Drug Embeddings (`./data/lincs2020/lincs2020_unimol_emb.parquet`): Contains pre-calculated 
+  chemical representations of drugs (e.g., vorinostat) using the Uni-Mol foundation model.
+- Model Weights (`./result/{seed}/lincs2020/Unicure_best_model.pth`): The pre-trained UniCure model.
+
+Output:
+- Prediction Result (`./data/test/prediction_result.csv`): The predicted gene expression profile 
+  (sensitivity/transcriptomic response) of the cell line after treatment with the specified drug 
+  and dose. The output helps researchers understand how a particular sample will respond to the 
+  gene perturbation induced by the drug.
+"""
+
 import torch
 import pandas as pd
 import numpy as np

@@ -104,11 +104,13 @@ def load_stage1_model(path, output_size=978, drug_window_size=32, drug_slide_ste
                             hidden_dim=hidden_dim, dropout_rate=dropout_rate)
     cureall_model.uce_lora = UCE_lora_model
 
-    if path is not None:
+    if path is not None and os.path.exists(path):
         pretrained_state_dict = torch.load(path, map_location="cpu")
         missing_keys, unexpected_keys = cureall_model.load_state_dict(pretrained_state_dict, strict=False)
         print("Missing keys:", missing_keys)
         print("Unexpected keys:", unexpected_keys)
+    else:
+        print(f"Stage 1 model path {path} not found.", flush=True)
 
     # print("merge lora")
     # cureall_model.uce_lora = cureall_model.uce_lora.merge_lora(inplace=False)
@@ -132,10 +134,13 @@ def load_stage1_model(path, output_size=978, drug_window_size=32, drug_slide_ste
 
 
 def load_cureall_pretrained_model(model, path):
-    pretrained_state_dict = torch.load(path, map_location="cpu")
-    missing_keys, unexpected_keys = model.load_state_dict(pretrained_state_dict, strict=False)
-    print("Missing keys:", missing_keys)
-    print("Unexpected keys:", unexpected_keys)
+    if path is not None and os.path.exists(path):
+        pretrained_state_dict = torch.load(path, map_location="cpu")
+        missing_keys, unexpected_keys = model.load_state_dict(pretrained_state_dict, strict=False)
+        print("Missing keys:", missing_keys)
+        print("Unexpected keys:", unexpected_keys)
+    else:
+        print(f"Model path {path} not found. Initializing model from scratch.", flush=True)
     return model
 
 
@@ -179,11 +184,14 @@ def load_UniCure_pretrained_model(path, output_size=978):
     UniCure_model = UniCure(output_size=output_size)
     UniCure_model.uce_lora = UCE_lora_model
 
-    pretrained_state_dict = torch.load(path, map_location="cpu")
+    if path is not None and os.path.exists(path):
+        pretrained_state_dict = torch.load(path, map_location="cpu")
 
-    missing_keys, unexpected_keys = UniCure_model.load_state_dict(pretrained_state_dict, strict=False)
-    print("Missing keys:", missing_keys)
-    print("Unexpected keys:", unexpected_keys)
+        missing_keys, unexpected_keys = UniCure_model.load_state_dict(pretrained_state_dict, strict=False)
+        print("Missing keys:", missing_keys)
+        print("Unexpected keys:", unexpected_keys)
+    else:
+        print(f"UniCure model path {path} not found.", flush=True)
 
     return UniCure_model
 
@@ -191,7 +199,7 @@ def load_UniCure_pretrained_model(path, output_size=978):
 def load_UniCureFTsc(path=None, output_size=1923):
     UniCure_model = UniCure()
 
-    if path is not None:
+    if path is not None and os.path.exists(path):
         pretrained_state_dict = torch.load(path, map_location="cpu")
         UniCure_model.load_state_dict(pretrained_state_dict, strict=False)
 
@@ -208,7 +216,7 @@ def load_UniCurePretrainsc(path=None, output_size=1923):
 
     UniCureFTsc_model = UniCureFTsc(UniCure_model, output_size=output_size)
 
-    if path is not None:
+    if path is not None and os.path.exists(path):
         pretrained_state_dict = torch.load(path, map_location="cpu")
         UniCureFTsc_model.load_state_dict(pretrained_state_dict, strict=False)
 
@@ -223,7 +231,7 @@ def load_UniCureFTsc4(path=None, output_size=2990):
 
     UniCureFTsc_model = UniCureFTsc(UniCure_model, output_size=1923)
 
-    if path is not None:
+    if path is not None and os.path.exists(path):
         pretrained_state_dict = torch.load(path, map_location="cpu")
         UniCureFTsc_model.load_state_dict(pretrained_state_dict, strict=False)
 
@@ -242,7 +250,7 @@ def load_UniCurePretrainsc4(path=None, output_size=1923):
 
     UniCureFTsc4_model = UniCureFTsc(UniCureFTsc_model, output_size=output_size)
 
-    if path is not None:
+    if path is not None and os.path.exists(path):
         pretrained_state_dict = torch.load(path, map_location="cpu")
         UniCureFTsc4_model.load_state_dict(pretrained_state_dict, strict=False)
 
@@ -252,7 +260,7 @@ def load_UniCurePretrainsc4(path=None, output_size=1923):
 def load_UniCureFT(path=None):
     UniCure_model = UniCure()
 
-    if path is not None:
+    if path is not None and os.path.exists(path):
         pretrained_state_dict = torch.load(path, map_location="cpu")
         UniCure_model.load_state_dict(pretrained_state_dict, strict=False)
 
@@ -276,7 +284,7 @@ def set_seed(seed):
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
         torch.backends.cudnn.deterministic = True
-        torch.backends.cudnn.benchmark = Falseq
+        torch.backends.cudnn.benchmark = False
 
 
 # %% data_pairs_split

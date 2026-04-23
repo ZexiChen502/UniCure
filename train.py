@@ -205,6 +205,11 @@ def train_perturbation_delta_model(model, mmd_loss_fn, trainable_parameters, tra
                                    num_epochs=10,
                                    device=None, seed=48, early_stopping_patience=10, dataset_name='lincs2020',
                                    max_batch_size=64):
+    """
+    [Phase 2 Training Function - Legacy]
+    NOTE: This version of the training loop is retained for legacy/ablation purposes. 
+    The results reported in the manuscript were produced using `train_perturbation_delta_model_v2`.
+    """
     if device is None:
         device = torch.device('cuda:7' if torch.cuda.is_available() else 'cpu')
 
@@ -454,8 +459,21 @@ def train_perturbation_delta_model_v2(model, mmd_loss_fn, trainable_parameters, 
                                       num_epochs=10, device=None, seed=48, early_stopping_patience=10,
                                       dataset_name='lincs2020'):
     """
-    注意：max_batch_size 参数现在已经在 Dataset 的 max_sample_size 中控制了。
-    这里的 DataLoader batch_size 控制的是一次处理多少个“实验组”。
+    [Phase 2 Training Function]
+    NOTE: This `v2` version of the training function is the primary one used to produce the reported results in the manuscript.
+    
+    This function optimizes the model using three effective loss terms to handle condition-specific responses 
+    without explicit sample-level pairing:
+    
+    1. Delta MSE (Weight: 1.0): Computes the mean squared error between the predicted delta (pred_mean - control_mean) 
+       and the real delta (real_mean - control_mean). This anchors the scale of the predicted perturbation.
+    2. Cosine Similarity / Correlation Loss (Weight: 0.5): Measures the cosine distance (1 - cosine_similarity) 
+       between predicted delta and real delta. This ensures the directionality of the perturbation matches the ground truth.
+    3. MMD Loss (Weight: 0.1): Maximum Mean Discrepancy (MMD) compares the distribution of predicted states and 
+       the distribution of real treated states at the group level. This allows the model to align representations 
+       in the absence of strictly paired single-cell data.
+    
+    The DataLoader batch_size controls the number of "experimental groups" processed concurrently.
     """
     if device is None:
         device = torch.device('cuda:7' if torch.cuda.is_available() else 'cpu')

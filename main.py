@@ -12,7 +12,7 @@ def train_lincs_step1(seed, accelerator):
     original_exp_df = pd.read_parquet('./data/lincs2020/lincs2020_control.parquet')
     UCE_lora_model = load_uce_pretrained_model(path='./requirement/UCE_pretraining_files/33l_8ep_1024t_1280.torch',
                                                target_layers=list(range(28, 33)))
-    cureall_model = load_cureall_pretrained_model(UniCure(), f'./result/{seed}/lincs2020/best_stage_1_model.pth')
+    cureall_model = load_cureall_pretrained_model(UniCure(), f'./result/{seed}/lincs2020/best_unicure_stage_1_model.pth')
 
     cureall_model.uce_lora = UCE_lora_model
     lincs2020_cureall_model = cureall_model
@@ -28,7 +28,7 @@ def train_lincs_step1(seed, accelerator):
 def train_lincs_step2(seed):
     train_loader, val_loader = lincs_step2_preprocessing_v2(seed)
 
-    cureall_model = load_stage1_model(path=f'./result/{seed}/lincs2020/best_stage_1_model.pth')
+    cureall_model = load_stage1_model(path=f'./result/{seed}/lincs2020/best_unicure_stage_1_model.pth')
 
     mmd_loss_fn = MMDLoss(kernel_type='rbf')
     trainable_parameters = get_trainable_parameters(cureall_model)
