@@ -45,7 +45,7 @@ pip install accelerate
 ⚠ Follow configuration (about how to configure DeepSpeed): https://github.com/huggingface/accelerate
 
 4. Install core dependencies
-pip install numpy pandas scikit-learn fastparquet tqdm anndata scanpy lora-pytorch
+pip install numpy pandas scikit-learn fastparquet tqdm anndata scanpy lora-pytorch scipy
 
 5. Install Uni-Mol (required for testing)
 You can create a new conda environment. 
