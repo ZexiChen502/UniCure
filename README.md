@@ -172,7 +172,14 @@ python main.py --run_sciplex3 --seed 42
 ```
 
 ## Cell Embedding Generation (After Stage 1 Training) :fire:
-```
+After completing the Stage 1 training, you must generate the cell embeddings before proceeding to Stage 2. This script performs a two-step process:
+1. Generates protein-level embeddings using **ESM2**.
+2. Generates cell-level embeddings using **UCE**.
+   - For bulk data (LINCS), it uses the **fine-tuned** UCE weights from Stage 1.
+   - For single-cell data (SciPlex), it uses the **pre-trained (vanilla)** UCE weights.
+
+To generate the embeddings, run:
+```bash
 python generate_emb.py
 ```
 
