@@ -206,9 +206,17 @@ def train_perturbation_delta_model(model, mmd_loss_fn, trainable_parameters, tra
                                    device=None, seed=48, early_stopping_patience=10, dataset_name='lincs2020',
                                    max_batch_size=64):
     """
-    [Phase 2 Training Function - Legacy]
-    NOTE: This version of the training loop is retained for legacy/ablation purposes. 
-    The results reported in the manuscript were produced using `train_perturbation_delta_model_v2`.
+    [Phase 2 Training Function - High Readability Version]
+    
+    This function is functionally identical to `train_perturbation_delta_model_v2` but is structured 
+    for better code readability and debugging. It is primarily used for datasets where training speed 
+    is not the primary bottleneck (e.g., SciPlex 4).
+    
+    Loss Function Components:
+    1. Delta MSE (Weight: 1.0): Computes the error between the predicted perturbation delta and real delta.
+    2. Cosine Correlation Loss (Weight: 0.5): Ensures the predicted perturbation direction matches the ground truth.
+    3. MMD Loss (Weight: 0.1): Aligns the high-dimensional distributions of predicted and real perturbed cells 
+       at the group level, overcoming the lack of strict single-cell paired data.
     """
     if device is None:
         device = torch.device('cuda:7' if torch.cuda.is_available() else 'cpu')
@@ -459,8 +467,10 @@ def train_perturbation_delta_model_v2(model, mmd_loss_fn, trainable_parameters, 
                                       num_epochs=10, device=None, seed=48, early_stopping_patience=10,
                                       dataset_name='lincs2020'):
     """
-    [Phase 2 Training Function]
-    NOTE: This `v2` version of the training function is the primary one used to produce the reported results in the manuscript.
+    [Phase 2 Training Function - High Speed Version]
+    NOTE: This `v2` version is functionally identical to `train_perturbation_delta_model`, 
+    but is heavily optimized for training speed. It is the primary function used for large-scale 
+    datasets like LINCS and SciPlex 3.
     
     This function optimizes the model using three effective loss terms to handle condition-specific responses 
     without explicit sample-level pairing:
