@@ -177,7 +177,11 @@ python generate_emb.py
 ```
 
 ## Fine-tuning Reproduction :fire:
-```
+To adapt the pre-trained UniCure model to specific cancer types (e.g., LUAD, BLCA, TNBC) from the Patient-Derived Tumor Cell (PTC) cohorts, you can run the fine-tuning script.
+
+By default, the script fine-tunes on the LUAD dataset across varying training sizes `[0.05, 0.1, 0.2, 0.4, 0.6, 0.8]` and multiple random seeds `[1, 2, 3, 4, 5]`. You can modify the script to include other cancer types by uncommenting the corresponding dataset blocks.
+
+```bash
 python finetune.py
 ```
 
