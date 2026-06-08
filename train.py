@@ -984,7 +984,7 @@ def test_Multiperturbation_model(model, test_loader, seed, gene_list, device=Non
     real_outputs_df.to_csv(os.path.join(save_dir, 'real_outputs.csv'), index=False)
 
 
-def finetune(model_path, cell_embed, drug_embed, perturbed, control, device, num_epochs, train_set_rate, seed,
+def finetune(model_path, cell_embed, drug_embed, perturbed, control, device, num_epochs, train_set, seed,
              save_dir):
     if device is None:
         device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
@@ -998,7 +998,7 @@ def finetune(model_path, cell_embed, drug_embed, perturbed, control, device, num
         train_indices, val_indices = \
         train_test_split(
             cell_embed, drug_embed, perturbed, control, all_indices,
-            test_size=(1 - train_set_rate),
+            test_size=(1 - train_set),
             random_state=seed
         )
 
