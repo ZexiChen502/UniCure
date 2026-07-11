@@ -140,9 +140,9 @@ for train_size in tqdm(train_size_list, desc="Outer loop (train_size)"):
             drug_embed=drug_embed, 
             perturbed=perturbed, 
             control=control, 
-            device=device, 
-            num_epochs=num_epochs, 
-            train_size=train_size, 
+            device=device,
+            num_epochs=num_epochs,
+            train_set=train_size,
             seed=seed,
             save_dir=save_dir
         )

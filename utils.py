@@ -235,7 +235,7 @@ def load_UniCureFTsc4(path=None, output_size=2990):
         pretrained_state_dict = torch.load(path, map_location="cpu")
         UniCureFTsc_model.load_state_dict(pretrained_state_dict, strict=False)
 
-    UniCureFTsc4_model = UniCureFTsc(UniCureFTsc_model, output_size=output_size)
+    UniCureFTsc4_model = UniCureFTsc(UniCureFTsc_model, output_size=output_size, input_size=1923)
 
     # for param in UniCureFTsc_model.pretrained_model.parameters():
     #     param.requires_grad = False
@@ -248,7 +248,7 @@ def load_UniCurePretrainsc4(path=None, output_size=1923):
 
     UniCureFTsc_model = UniCureFTsc(UniCure_model, output_size=1923)
 
-    UniCureFTsc4_model = UniCureFTsc(UniCureFTsc_model, output_size=output_size)
+    UniCureFTsc4_model = UniCureFTsc(UniCureFTsc_model, output_size=output_size, input_size=1923)
 
     if path is not None and os.path.exists(path):
         pretrained_state_dict = torch.load(path, map_location="cpu")

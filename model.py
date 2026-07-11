@@ -227,13 +227,14 @@ class UniCure(nn.Module):
 
 
 class UniCureFTsc(nn.Module):
-    def __init__(self, pretrained_model, hidden_dim: int = 2048, output_size: int = 1923, dropout_rate: float = 0.2):
+    def __init__(self, pretrained_model, hidden_dim: int = 2048, output_size: int = 1923, dropout_rate: float = 0.2,
+                 input_size: int = 978):
         super(UniCureFTsc, self).__init__()
         self.pretrained_model = pretrained_model
 
         self.adaptor = nn.Sequential(
             # nn.Linear(output_size, output_size),
-            nn.Linear(978, hidden_dim),
+            nn.Linear(input_size, hidden_dim),
             nn.ReLU(),
             nn.Dropout(dropout_rate),
             nn.Linear(hidden_dim, output_size),

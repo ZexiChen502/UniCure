@@ -112,7 +112,7 @@ def process_data_to_df(df, gene_columns_start, pe_row_idxs, dataset_chroms, data
     first 1536 columns as batch_sentences, and the last 1536 columns as mask.
     """
     df = df.reset_index(drop=True)
-    exp = df.iloc[:, gene_columns_start:].astype(float).values
+    exp = df.iloc[:, gene_columns_start:].astype(float).values.copy()
     exp[exp < 0] = 0
     data = []
     index = []
@@ -135,7 +135,7 @@ def process_data_to_df(df, gene_columns_start, pe_row_idxs, dataset_chroms, data
         counts = exp[i, :]
         counts = torch.tensor(counts).unsqueeze(0)
 
-        if (dataset_name == "lincs") & (dataset_name == "geo"):
+        if (dataset_name == "lincs") | (dataset_name == "geo"):
             weights = (counts / torch.sum(counts))
         elif dataset_name == "sciplex":
             weights = torch.log1p(counts)

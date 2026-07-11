@@ -30,3 +30,4 @@ dependencies:
     - lora-pytorch==0.2.0
     - accelerate==1.2.1
     - deepspeed==0.16.2
+    - geomloss==0.2.6

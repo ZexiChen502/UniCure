@@ -219,7 +219,7 @@ def train_perturbation_delta_model(model, mmd_loss_fn, trainable_parameters, tra
        at the group level, overcoming the lack of strict single-cell paired data.
     """
     if device is None:
-        device = torch.device('cuda:7' if torch.cuda.is_available() else 'cpu')
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     set_seed(seed)
     model.to(device)
@@ -486,7 +486,7 @@ def train_perturbation_delta_model_v2(model, mmd_loss_fn, trainable_parameters, 
     The DataLoader batch_size controls the number of "experimental groups" processed concurrently.
     """
     if device is None:
-        device = torch.device('cuda:7' if torch.cuda.is_available() else 'cpu')
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     # Utils functions like set_seed need to be available in your scope
     # set_seed(seed)
@@ -775,7 +775,7 @@ def test_perturbation_model(model, test_loader, seed, gene_list, device=None, da
 def test_perturbation_model_v2(model, test_loader, seed, gene_list, device=None,
                                dataset_name='lincs2020', subsample_size=10):
     if device is None:
-        device = torch.device('cuda:6' if torch.cuda.is_available() else 'cpu')
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
     model.to(device)
     model.eval()
