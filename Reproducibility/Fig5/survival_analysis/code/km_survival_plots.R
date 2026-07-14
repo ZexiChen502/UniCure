@@ -12,7 +12,7 @@ raw_dir <- file.path(repo_root, "raw_data", "Fig5", "survival_analysis")
 out_dir <- file.path(module_dir, "output_plot")
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-# Fig. 5L-O and Fig. S16I-K Kaplan-Meier plotting workflow:
+# Fig. 5L-O and Fig. S14I-K Kaplan-Meier plotting workflow:
 #   - Read released patient-level survival and drug-rank tables for each cancer type.
 #   - Treat each row as one sample in the survival analysis.
 #   - Use days_to_death when available, otherwise days_to_last_followup, as survival time.
@@ -25,9 +25,9 @@ cancer_map <- list(
   BRCA = list(fig = "fig5m"),
   BLCA = list(fig = "fig5n"),
   LUSC = list(fig = "fig5o"),
-  COAD = list(fig = "figs16i"),
-  KIRC = list(fig = "figs16j"),
-  LIHC = list(fig = "figs16k")
+  COAD = list(fig = "figs14i"),
+  KIRC = list(fig = "figs14j"),
+  LIHC = list(fig = "figs14k")
 )
 
 COLORS <- c("High Rank" = "#FF7517", "Low Rank" = "#46C3DB")

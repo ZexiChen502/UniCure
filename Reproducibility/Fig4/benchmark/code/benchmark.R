@@ -9,14 +9,14 @@ raw_dir <- file.path(repo_root, "raw_data", "fig4", "benchmark")
 out_dir <- file.path(module_dir, "output_plot")
 dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
 
-# Fig. 4H and Fig. S13A-B benchmark plotting workflow:
-#   - LUAD maps to Fig. 4H, BLCA to Fig. S13A, and TNBC to Fig. S13B.
+# Fig. 4H and Fig. S10A-B benchmark plotting workflow:
+#   - LUAD maps to Fig. 4H, BLCA to Fig. S10A, and TNBC to Fig. S10B.
 #   - Released benchmark tables compare fine-tuned UniCure, zero-shot UniCure,
 #     TranSiGen, and PRnet on the same PTC evaluation setting.
 #   - The script writes the plotting data used for each panel and regenerates
 #     boxplot-plus-jitter summaries with Wilcoxon-test annotations.
 
-cancer_to_figure <- c(LUAD = "fig4h", BLCA = "figs13a", TNBC = "figs13b")
+cancer_to_figure <- c(LUAD = "fig4h", BLCA = "figs10a", TNBC = "figs10b")
 model_levels <- c("UniCure Finetune", "UniCure", "Transigen", "PRnet")
 model_labels <- c(
   "UniCure Finetune" = "Fine-tuned UniCure",

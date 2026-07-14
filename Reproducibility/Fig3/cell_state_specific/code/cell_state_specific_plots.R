@@ -109,7 +109,7 @@ plot_volcano <- function(drug_name, cell_line, figure_label) {
 
 plot_pathway("alpelisib", "MCF7", "fig3e")
 plot_pathway("copanlisib", "MCF7", "fig3f")
-plot_volcano("alpelisib", "MCF7", "figs10a")
-plot_volcano("copanlisib", "MCF7", "figs10b")
+plot_volcano("alpelisib", "MCF7", "figs7a")
+plot_volcano("copanlisib", "MCF7", "figs7b")
 
 message("All cell-state-specific plots generated successfully: ", output_dir)

@@ -54,7 +54,7 @@ Each case folder in `./Reproducibility/` contains a `code/` directory,and an `ou
 
 Figure 2 evaluates UniCure's training behavior, held-out prediction accuracy, embedding geometry, and benchmark performance across bulk and single-cell perturbation settings. The released Fig. 2 reproducibility modules start from saved training histories, metric summaries, t-SNE coordinate tables, and benchmark tables, then regenerate the figure-level plots.
 
-### Fig. 2A and Fig. S4: training and validation curves
+### Fig. 2A and Fig. S2: training and validation curves
 
 **Scientific purpose.** These panels show UniCure training dynamics across LINCS 2020, UCE-LoRA, sci-Plex3, and sci-Plex4 training stages. Each output figure displays loss and R2 curves so that convergence and validation behavior can be inspected together.
 
@@ -127,7 +127,7 @@ Expected outputs include `lincs_Metric_on_test_datasets.pdf/.png`, `sciplex3_Met
 
 **Reproducibility notes.** The metric tables summarize held-out comparisons between predicted and observed perturbation profiles. The upstream evaluations are produced by the test routines called from `main.py` (`test_lincs`, `test_sciplex3`, and `test_sciplex4`) using model weights under `./result/11/` and the corresponding `data_pairs_test.pkl` files for LINCS 2020, sci-Plex3, and sci-Plex4. The same source datasets and split files used for training are therefore carried through to held-out test-set evaluation. The released R script standardizes these summaries to a common metric/value format and applies a consistent visualization across datasets.
 
-### Fig. 2C-F and Fig. S5: t-SNE and embedding visualization
+### Fig. 2C-F and Fig. S3: t-SNE and embedding visualization
 
 **Scientific purpose.** These panels visualize whether UniCure preserves cell identity, resolves batch effects through UCE-LoRA, and recapitulates the global geometry of observed single-cell perturbation profiles.
 
@@ -145,7 +145,7 @@ Key files include:
 - `sciplex_predict_tsne_result.csv`
 - `sciplex_real_tsne_result.csv`
 
-The LINCS files support the control, UCE-LoRA embedding, and predicted perturbation panels. The sci-Plex3 files provide paired predicted and observed coordinate tables used for Fig. 2F and the cell-line-specific Fig. S5 panels.
+The LINCS files support the control, UCE-LoRA embedding, and predicted perturbation panels. The sci-Plex3 files provide paired predicted and observed coordinate tables used for Fig. 2F and the cell-line-specific Fig. S3 panels.
 
 **Code.** The plotting entry point is:
 
@@ -153,7 +153,7 @@ The LINCS files support the control, UCE-LoRA embedding, and predicted perturbat
 ./Reproducibility/Fig2/tsne/code/plot_tsne_figures.py
 ```
 
-The script reads the released coordinate tables and generates panel-specific scatter plots. Fig. S5 is produced by filtering the combined sci-Plex3 predicted and observed coordinate tables into A549, K562, and MCF7 subsets and coloring points by drug identity.
+The script reads the released coordinate tables and generates panel-specific scatter plots. Fig. S3 is produced by filtering the combined sci-Plex3 predicted and observed coordinate tables into A549, K562, and MCF7 subsets and coloring points by drug identity.
 
 **Outputs.** Regenerated figures are written to:
 
@@ -168,13 +168,13 @@ Expected outputs include:
 - `fig2e_lincs_predict_tsne.pdf/.png`
 - `fig2f_left_sciplex3_predict_tsne.pdf/.png`
 - `fig2f_right_sciplex3_real_tsne.pdf/.png`
-- `figs5_a549_tsne.pdf/.png`
-- `figs5_k562_tsne.pdf/.png`
-- `figs5_mcf7_tsne.pdf/.png`
+- `figs3_a549_tsne.pdf/.png`
+- `figs3_k562_tsne.pdf/.png`
+- `figs3_mcf7_tsne.pdf/.png`
 
 **Reproducibility notes.** Coordinate generation and panel plotting are represented as separate steps in this module. The upstream LINCS and sci-Plex coordinate tables are derived from the same README-described LINCS 2020 and sci-Plex resources and from UniCure predictions on the held-out split files under `./result/11/`. Root-level `generate_emb.py` records the cell-embedding generation step after LINCS stage-1 training, while `main.py`, `preprocessing.py`, `utils.py`, and `model.py` provide the prediction workflow and model definitions used to produce the profiles that are projected for visualization. The released coordinate tables capture the two-dimensional projections used for the figure, and the plotting script reads those coordinates to apply the panel-specific coloring, filtering, and figure export logic.
 
-### Fig. 2G and Fig. S6: benchmark comparison
+### Fig. 2G and Fig. S4: benchmark comparison
 
 **Scientific purpose.** These panels compare UniCure with benchmark perturbation-prediction models in bulk and single-cell settings, emphasizing recovery of genes with strong observed perturbation responses.
 
@@ -223,7 +223,7 @@ Expected outputs include:
 
 Figure 3 evaluates whether UniCure predictions preserve biologically interpretable perturbation structure. The released Fig. 3 modules cover mechanism-of-action and dose visualization, disease-relevant target-gene expression, cell-state and pathway-level response signatures, and sci-Plex4 dual-drug combination effects.
 
-### Fig. 3A-B and Fig. S7: mechanism-of-action and dose visualization
+### Fig. 3A-B and Fig. S5: mechanism-of-action and dose visualization
 
 **Scientific purpose.** These panels test whether predicted perturbation profiles preserve compound identity, mechanism-of-action structure, and dose-dependent shifts in expression space.
 
@@ -260,16 +260,16 @@ Expected outputs include:
 
 - `fig3a_a375_drug.pdf/.png`
 - `fig3b_a375_dose.pdf/.png`
-- `figs7a_mcf7_drug.pdf/.png`
-- `figs7b_mcf7_dose.pdf/.png`
-- `figs7c_pc3_drug.pdf/.png`
-- `figs7d_pc3_dose.pdf/.png`
-- `figs7e_a549_drug.pdf/.png`
-- `figs7f_a549_dose.pdf/.png`
+- `figs5a_mcf7_drug.pdf/.png`
+- `figs5b_mcf7_dose.pdf/.png`
+- `figs5c_pc3_drug.pdf/.png`
+- `figs5d_pc3_dose.pdf/.png`
+- `figs5e_a549_drug.pdf/.png`
+- `figs5f_a549_dose.pdf/.png`
 
 **Reproducibility notes.** Predicted and observed profiles are represented as paired coordinate tables with shared metadata fields. The upstream predictions are generated from LINCS 2020 test-set perturbation profiles and UniCure model weights using the same root workflow described for Fig. 2 (`main.py`, `preprocessing.py`, `utils.py`, and `model.py`). The plotting script uses these fields to compare predicted and observed organization by compound identity and dose across the same cell-line contexts.
 
-### Fig. 3C and Fig. S8: target-gene expression
+### Fig. 3C and Fig. S6: target-gene expression
 
 **Scientific purpose.** These panels compare predicted and observed expression for disease-relevant target genes across BRCA, COAD, LUAD, and PRAD, using both absolute expression and treatment-minus-control delta expression.
 
@@ -306,17 +306,17 @@ The Python script validates that matched predicted and observed tables have the 
 Expected outputs include:
 
 - `fig3c_brca_absolute_target_gene.pdf/.png`
-- `figs8a_coad_absolute_target_gene.pdf/.png`
-- `figs8b_luad_absolute_target_gene.pdf/.png`
-- `figs8c_prad_absolute_target_gene.pdf/.png`
-- `figs8d_brca_delta_target_gene.pdf/.png`
-- `figs8e_coad_delta_target_gene.pdf/.png`
-- `figs8f_luad_delta_target_gene.pdf/.png`
-- `figs8g_prad_delta_target_gene.pdf/.png`
+- `figs6a_coad_absolute_target_gene.pdf/.png`
+- `figs6b_luad_absolute_target_gene.pdf/.png`
+- `figs6c_prad_absolute_target_gene.pdf/.png`
+- `figs6d_brca_delta_target_gene.pdf/.png`
+- `figs6e_coad_delta_target_gene.pdf/.png`
+- `figs6f_luad_delta_target_gene.pdf/.png`
+- `figs6g_prad_delta_target_gene.pdf/.png`
 
 **Reproducibility notes.** The target-gene workflow links cancer-specific target selection with matched predicted and observed LINCS 2020 test-set expression tables. Cancer-associated target genes are intersected with the LINCS landmark-gene feature space, and UniCure predictions are generated by the root model workflow from the same LINCS source data and split structure used for Fig. 2. Absolute-expression panels retain repeated profiles, while delta-expression panels represent treatment-minus-control changes after condition-level summarization.
 
-### Fig. 3D-F, Fig. S9, and Fig. S10: cell-state and pathway response signatures
+### Fig. 3D-F and Fig. S7: cell-state and pathway response signatures
 
 **Scientific purpose.** These analyses examine cell-state-specific perturbation responses and pathway-level transcriptional programs associated with PI3K/AKT-pathway drugs.
 
@@ -347,12 +347,12 @@ Expected outputs from the plotting script include:
 
 - `fig3e_alpelisib_MCF7_pathway.pdf/.png`
 - `fig3f_copanlisib_MCF7_pathway.pdf/.png`
-- `figs10a_alpelisib_MCF7_volcano.pdf/.png`
-- `figs10b_copanlisib_MCF7_volcano.pdf/.png`
+- `figs7a_alpelisib_MCF7_volcano.pdf/.png`
+- `figs7b_copanlisib_MCF7_volcano.pdf/.png`
 
 **Reproducibility notes.** The cell-state workflow connects marker-defined response groups, predicted perturbation effects, differential-expression summaries, and pathway-enrichment results. `cell_state_response_workflow.py` records the source workflow for Fig. 3D and Fig. S9, starting from sci-Plex3 A549 control cells, defining SRC/DDR1/CAV1-associated subpopulations, applying the sci-Plex3-trained UniCure model to Dasatinib prediction, and ranking response genes. The MCF7 pathway and volcano panels use LINCS-derived predicted perturbation profiles and released differential-expression/enrichment summaries. The plotting script uses released enrichment and differential-expression tables to display the pathway and gene-level signatures supporting the corresponding Fig. 3 and supplementary panels.
 
-### Fig. 3G and Fig. S11: sci-Plex4 combination effects
+### Fig. 3G and Fig. S8: sci-Plex4 combination effects
 
 **Scientific purpose.** These panels evaluate UniCure predictions for dual-drug perturbations in sci-Plex4 and compare UniCure combination predictions with an additive single-drug baseline across unseen-combination settings.
 
@@ -392,12 +392,12 @@ The script reads predicted and observed coordinate tables, generates t-SNE panel
 Expected outputs include:
 
 - `fig3g_sciplex4_prediction_combination_effects.pdf/.png`
-- `figs11a_sciplex4_real_cell_type.pdf/.png`
-- `figs11b_sciplex4_real_drug1_name.pdf/.png`
-- `figs11c_sciplex4_real_drug1_dose.pdf/.png`
-- `figs11d_sciplex4_real_drug2_name.pdf/.png`
-- `figs11e_sciplex4_real_drug2_dose.pdf/.png`
-- `figs11f_sciplex4_unseen_evaluation.pdf/.png`
+- `figs8a_sciplex4_real_cell_type.pdf/.png`
+- `figs8b_sciplex4_real_drug1_name.pdf/.png`
+- `figs8c_sciplex4_real_drug1_dose.pdf/.png`
+- `figs8d_sciplex4_real_drug2_name.pdf/.png`
+- `figs8e_sciplex4_real_drug2_dose.pdf/.png`
+- `figs8f_sciplex4_unseen_evaluation.pdf/.png`
 
 **Reproducibility notes.** The combination-effects workflow combines sci-Plex4 coordinate visualization with quantitative unseen-combination evaluation. The sci-Plex4 source data are part of the README-described data release; training and testing use `main.py` functions `train_sciplex4` and `test_sciplex4` with split files under `./result/11/sciplex4/` and the model definitions in `model.py`. Predicted and observed coordinate tables support the t-SNE panels, while the correlation tables support the UniCure-versus-additive-baseline comparison for increasing levels of unseen drug-combination generalization.
 
@@ -458,7 +458,7 @@ The script also writes `fig4g_ablation_plotting_data.csv`, `fig4g_ablation_summa
 
 **Reproducibility notes.** The fine-tuning tables organize repeated-seed performance by training fraction and cancer type. PTC data are included in the repository data release described in `README.md` before placement under the README verification-checklist paths. Root-level `finetune.py` records the PTC fine-tuning workflow, starting from the pretrained UniCure model and evaluating LUAD, BLCA, and TNBC across the released training fractions and seeds. The R script displays the distribution of correlation coefficients across fractions and summarizes the 5% fine-tuning ablation comparison with mean, standard deviation, and Wilcoxon-test annotations.
 
-### Fig. 4H and Fig. S13A-B: benchmark evaluation
+### Fig. 4H and Fig. S10A-B: benchmark evaluation
 
 **Scientific purpose.** These panels compare fine-tuned UniCure with zero-shot UniCure, TranSiGen, and PRnet on LUAD, BLCA, and TNBC patient-derived tumor cell benchmark data.
 
@@ -493,11 +493,11 @@ The script reads each cancer-specific benchmark table, standardizes model labels
 Expected outputs include:
 
 - `fig4h_luad_benchmark.pdf/.png`
-- `figs13a_blca_benchmark.pdf/.png`
-- `figs13b_tnbc_benchmark.pdf/.png`
+- `figs10a_blca_benchmark.pdf/.png`
+- `figs10b_tnbc_benchmark.pdf/.png`
 - `fig4h_luad_benchmark_plotting_data.csv`
-- `figs13a_blca_benchmark_plotting_data.csv`
-- `figs13b_tnbc_benchmark_plotting_data.csv`
+- `figs10a_blca_benchmark_plotting_data.csv`
+- `figs10b_tnbc_benchmark_plotting_data.csv`
 
 **Reproducibility notes.** The benchmark workflow compares model-level prediction quality within each patient-derived tumor cell cancer setting. PTC benchmark inputs follow the same downloaded PTC resources used for Fig. 4A-G. The independent real-world clinical transcriptomic profiles used elsewhere in Fig. 4 were collected from GEO according to manuscript Table S24. The plotting script keeps the same model order across panels and applies the corresponding Wilcoxon comparison structure to the released correlation-coefficient tables.
 
@@ -545,7 +545,7 @@ Expected outputs include:
 
 Figure 5 applies UniCure to patient-level transcriptomic and clinical contexts. The released Fig. 5 modules cover patient stratification from drug-rank matrices, clinically indicated drug recommendation, and Kaplan-Meier survival analysis from patient-level survival tables.
 
-### Fig. 5B-G and Fig. S14A-B: patient stratification and cluster-associated signatures
+### Fig. 5B-G and Fig. S11A-B: patient stratification and cluster-associated signatures
 
 **Scientific purpose.** These panels stratify BRCA and KIRC patients using UniCure-derived drug-rank profiles and characterize cluster-associated pathway and drug-response signatures.
 
@@ -595,12 +595,12 @@ Expected outputs include:
 - `fig5e_brca_diff_drug_lollipop.pdf/.png`
 - `fig5f_kirc_pathway_enrichment.pdf/.png`
 - `fig5g_kirc_diff_drug_lollipop.pdf/.png`
-- `figs14a_brca_kmeans_evaluation.pdf/.png`
-- `figs14b_kirc_kmeans_evaluation.pdf/.png`
+- `figs11a_brca_kmeans_evaluation.pdf/.png`
+- `figs11b_kirc_kmeans_evaluation.pdf/.png`
 
 **Reproducibility notes.** The patient stratification workflow uses UniCure-derived patient-by-drug rank matrices as the central input. TCGA transcriptomic and clinical data were downloaded from UCSC Xena as described in the manuscript, and the released raw-data tables contain the tumor expression, drug-rank, clustering, differential-expression, and pathway-enrichment summaries used for Fig. 5. The Python script displays patient clustering from these matrices, while the R script summarizes pathway enrichment and differential drug ranks associated with the resulting patient groups.
 
-### Fig. 5H-K and Fig. S16A-D: clinically indicated drug recommendation
+### Fig. 5H-K and Fig. S13A-D: clinically indicated drug recommendation
 
 **Scientific purpose.** These panels compare ranks of clinically indicated therapies against randomized within-patient drug-rank baselines across eight TCGA cancer types.
 
@@ -643,14 +643,14 @@ Expected outputs include:
 - `fig5i_brca_drug_recommendation.pdf/.png`
 - `fig5j_blca_drug_recommendation.pdf/.png`
 - `fig5k_lusc_drug_recommendation.pdf/.png`
-- `figs16a_kirc_drug_recommendation.pdf/.png`
-- `figs16b_lihc_drug_recommendation.pdf/.png`
-- `figs16c_coad_drug_recommendation.pdf/.png`
-- `figs16d_prad_drug_recommendation.pdf/.png`
+- `figs13a_kirc_drug_recommendation.pdf/.png`
+- `figs13b_lihc_drug_recommendation.pdf/.png`
+- `figs13c_coad_drug_recommendation.pdf/.png`
+- `figs13d_prad_drug_recommendation.pdf/.png`
 
 **Reproducibility notes.** The drug recommendation workflow uses patient-specific UniCure drug ranks and a matched randomized baseline. TCGA expression and clinical therapy annotations are obtained from UCSC Xena as described in the manuscript, then converted into the released recommended-versus-randomized rank tables. For each cancer type, clinically indicated therapies are extracted from the rank table, compared with randomized ranks, and displayed as paired rank distributions.
 
-### Fig. 5L-O and Fig. S16I-K: survival analysis
+### Fig. 5L-O and Fig. S14I-K: survival analysis
 
 **Scientific purpose.** These panels evaluate whether UniCure-derived drug-rank groups are associated with patient overall survival across cancer cohorts.
 
@@ -693,9 +693,9 @@ Expected outputs include:
 - `fig5m_brca_km_survival.pdf/.png`
 - `fig5n_blca_km_survival.pdf/.png`
 - `fig5o_lusc_km_survival.pdf/.png`
-- `figs16i_coad_km_survival.pdf/.png`
-- `figs16j_kirc_km_survival.pdf/.png`
-- `figs16k_lihc_km_survival.pdf/.png`
+- `figs14i_coad_km_survival.pdf/.png`
+- `figs14j_kirc_km_survival.pdf/.png`
+- `figs14k_lihc_km_survival.pdf/.png`
 
 **Reproducibility notes.** The survival workflow starts from patient-level TCGA tables downloaded from UCSC Xena, including survival follow-up, treatment records, and UniCure-derived normalized drug-rank ratios. `deepsurv_contrastive_demo.py` records the survival-risk modeling structure, including a UniCure-based survival head, Cox partial-likelihood loss, and administered-versus-random drug contrastive loss. The R script constructs Kaplan-Meier inputs directly from the released patient-level tables, uses the fixed top-30% priority grouping threshold (`avg_drug_rank <= 0.3`), calculates log-rank p values, and exports one survival panel per cancer type.
 

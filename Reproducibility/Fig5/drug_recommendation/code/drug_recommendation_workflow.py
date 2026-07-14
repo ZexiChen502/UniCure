@@ -103,10 +103,10 @@ FIGURE_MAP = {
     "BRCA": ("fig5i",  112),
     "BLCA": ("fig5j",   19),
     "LUSC": ("fig5k",   49),
-    "KIRC": ("figs16a", 72),
-    "LIHC": ("figs16b", 50),
-    "COAD": ("figs16c", 41),
-    "PRAD": ("figs16d", 52),
+    "KIRC": ("figs13a", 72),
+    "LIHC": ("figs13b", 50),
+    "COAD": ("figs13c", 41),
+    "PRAD": ("figs13d", 52),
 }
 
 PALETTE = {"Recommended": "#FFACAC", "Randomized": "#3A98B9"}

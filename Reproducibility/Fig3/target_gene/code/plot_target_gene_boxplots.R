@@ -93,8 +93,8 @@ plot_prediction_vs_real <- function(pred_file, real_file, cancer_type, measure_t
 }
 
 figure_map <- list(
-  absolute = c(BRCA = "fig3c", COAD = "figs8a", LUAD = "figs8b", PRAD = "figs8c"),
-  delta = c(BRCA = "figs8d", COAD = "figs8e", LUAD = "figs8f", PRAD = "figs8g")
+  absolute = c(BRCA = "fig3c", COAD = "figs6a", LUAD = "figs6b", PRAD = "figs6c"),
+  delta = c(BRCA = "figs6d", COAD = "figs6e", LUAD = "figs6f", PRAD = "figs6g")
 )
 
 for (measure_type in names(figure_map)) {

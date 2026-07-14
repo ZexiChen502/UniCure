@@ -46,15 +46,15 @@ cell_list = ["A375", "MCF7", "PC3", "A549"]
 
 # Figure mapping for output naming
 # A375 -> Fig. 3A (drug), Fig. 3B (dose)
-# MCF7 -> Fig. S7A (drug), Fig. S7B (dose)
-# PC3  -> Fig. S7C (drug), Fig. S7D (dose)
-# A549 -> Fig. S7E (drug), Fig. S7F (dose)
+# MCF7 -> Fig. S5A (drug), Fig. S5B (dose)
+# PC3  -> Fig. S5C (drug), Fig. S5D (dose)
+# A549 -> Fig. S5E (drug), Fig. S5F (dose)
 
 figure_label = {
     "A375": {"drug": "fig3a", "dose": "fig3b"},
-    "MCF7": {"drug": "figs7a", "dose": "figs7b"},
-    "PC3":  {"drug": "figs7c", "dose": "figs7d"},
-    "A549": {"drug": "figs7e", "dose": "figs7f"},
+    "MCF7": {"drug": "figs5a", "dose": "figs5b"},
+    "PC3":  {"drug": "figs5c", "dose": "figs5d"},
+    "A549": {"drug": "figs5e", "dose": "figs5f"},
 }
 
 

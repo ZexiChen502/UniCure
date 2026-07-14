@@ -314,10 +314,10 @@ def plot_fig2f():
     print("  Saved fig2f_left/right_sciplex3_tsne")
 
 # ============================================================
-# Fig. S5 A/B/C - sci-Plex3 by cell line (drug colored)
+# Fig. S3 A/B/C - sci-Plex3 by cell line (drug colored)
 # ============================================================
-def plot_fig_s5():
-    print("Plotting Fig. S5: sci-Plex3 by cell line (drug colored)...")
+def plot_fig_s3():
+    print("Plotting Fig. S3: sci-Plex3 by cell line (drug colored)...")
     
     # Upstream coordinate-generation workflow:
     #   1. Split predicted and observed sci-Plex3 expression profiles by cell line.
@@ -399,10 +399,10 @@ def plot_fig_s5():
         axes[1].set_ylabel('tSNE 2')
         
         plt.tight_layout()
-        plt.savefig(os.path.join(OUTPUT_DIR, f'figs5_{cell_type.lower()}_tsne.png'), dpi=300, transparent=True)
-        plt.savefig(os.path.join(OUTPUT_DIR, f'figs5_{cell_type.lower()}_tsne.pdf'), transparent=True)
+        plt.savefig(os.path.join(OUTPUT_DIR, f'figs3_{cell_type.lower()}_tsne.png'), dpi=300, transparent=True)
+        plt.savefig(os.path.join(OUTPUT_DIR, f'figs3_{cell_type.lower()}_tsne.pdf'), transparent=True)
         plt.close()
-        print(f"    Saved figs5_{cell_type.lower()}_tsne")
+        print(f"    Saved figs3_{cell_type.lower()}_tsne")
 
 # ============================================================
 # Main
@@ -417,7 +417,7 @@ if __name__ == '__main__':
     plot_fig2d()
     plot_fig2e()
     plot_fig2f()
-    plot_fig_s5()
+    plot_fig_s3()
     
     print()
     print("=" * 60)

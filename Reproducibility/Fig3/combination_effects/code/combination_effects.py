@@ -183,13 +183,13 @@ def plot_fig3g_prediction(df_pred):
     print(f'  Saved {output_stem}')
 
 
-def plot_figs11_real(df_real):
+def plot_figs8_real(df_real):
     panel_map = {
-        'cell_type': ('Fig. S11A real sci-Plex4 cells by cell type', 'figs11a_sciplex4_real_cell_type'),
-        'drug1_name': ('Fig. S11B real sci-Plex4 cells by first drug identity', 'figs11b_sciplex4_real_drug1_name'),
-        'drug1_dose': ('Fig. S11C real sci-Plex4 cells by first drug dose', 'figs11c_sciplex4_real_drug1_dose'),
-        'drug2_name': ('Fig. S11D real sci-Plex4 cells by second drug identity', 'figs11d_sciplex4_real_drug2_name'),
-        'drug2_dose': ('Fig. S11E real sci-Plex4 cells by second drug dose', 'figs11e_sciplex4_real_drug2_dose'),
+        'cell_type': ('Fig. S8A real sci-Plex4 cells by cell type', 'figs8a_sciplex4_real_cell_type'),
+        'drug1_name': ('Fig. S8B real sci-Plex4 cells by first drug identity', 'figs8b_sciplex4_real_drug1_name'),
+        'drug1_dose': ('Fig. S8C real sci-Plex4 cells by first drug dose', 'figs8c_sciplex4_real_drug1_dose'),
+        'drug2_name': ('Fig. S8D real sci-Plex4 cells by second drug identity', 'figs8d_sciplex4_real_drug2_name'),
+        'drug2_dose': ('Fig. S8E real sci-Plex4 cells by second drug dose', 'figs8e_sciplex4_real_drug2_dose'),
     }
     for column, (title, output_stem) in panel_map.items():
         plot_single_panel(df_real, column, title, output_stem)
@@ -209,7 +209,7 @@ def read_correlation_table(path, model, scenario):
     return df
 
 
-def load_s11f_data():
+def load_s8f_data():
     frames = []
     for index, scenario in SCENARIOS:
         unicure_path = os.path.join(RAW_DATA_DIR, f'sciplex4_unseen_correlations_{index}.csv')
@@ -250,7 +250,7 @@ def add_stat_annotations(ax, df):
         ax.text((x1 + x2) / 2, y_line + line_h, star, ha='center', va='bottom', color='black', fontsize=13, fontweight='bold')
 
 
-def plot_s11f(df):
+def plot_s8f(df):
     sns.set_theme(style='ticks', font_scale=1.1)
     fig, ax = plt.subplots(figsize=(10, 6.5))
     sns.boxplot(
@@ -290,7 +290,7 @@ def plot_s11f(df):
     ax.set_title('Predictive Performance on Unseen Drug Combinations', pad=36, fontsize=14)
     sns.despine(trim=False)
     plt.tight_layout()
-    output_stem = 'figs11f_sciplex4_unseen_evaluation'
+    output_stem = 'figs8f_sciplex4_unseen_evaluation'
     plt.savefig(os.path.join(OUTPUT_DIR, f'{output_stem}.png'), dpi=300, bbox_inches='tight')
     plt.savefig(os.path.join(OUTPUT_DIR, f'{output_stem}.pdf'), bbox_inches='tight')
     plt.close()
@@ -299,16 +299,16 @@ def plot_s11f(df):
 
 def main():
     print('=' * 60)
-    print('Fig. 3G / Fig. S11 sci-Plex4 combination effects')
+    print('Fig. 3G / Fig. S8 sci-Plex4 combination effects')
     print('=' * 60)
     df_pred = read_coordinates(PRED_COORD_FILE)
     df_real = read_coordinates(REAL_COORD_FILE)
     print(f'Predicted coordinates: {df_pred.shape[0]} rows')
     print(f'Real coordinates: {df_real.shape[0]} rows')
     plot_fig3g_prediction(df_pred)
-    plot_figs11_real(df_real)
-    s11f_df = load_s11f_data()
-    plot_s11f(s11f_df)
+    plot_figs8_real(df_real)
+    s8f_df = load_s8f_data()
+    plot_s8f(s8f_df)
     print(f'Output directory: {OUTPUT_DIR}')
 
 
