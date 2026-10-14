@@ -45,8 +45,15 @@ def collate_fn_batch(batch):
         all_real_control.append(real_control)
 
         # Expand Inputs to match Treated cells count for Forward Pass
-        # Cell Emb: (1, dim) -> (N, dim)
-        all_cell_embeds.append(cell_emb.repeat(n_treated, 1))
+        # Cell Emb: (N, dim) —— dataset 已为每个 treated 细胞采样好一个不同的对照细胞向量
+        # (不能用 repeat 复制同一向量, 否则组内 N 个预测完全相同, 分布匹配退化)
+        if cell_emb.dim() == 1:
+            cell_emb = cell_emb.unsqueeze(0)
+        if cell_emb.shape[0] != n_treated:
+            # 兜底: 行数与 treated 数不一致时重采样补齐
+            idx = torch.randint(0, cell_emb.shape[0], (n_treated,))
+            cell_emb = cell_emb[idx]
+        all_cell_embeds.append(cell_emb)
 
         # Drug Emb: (1, dim) -> (N, dim)
         all_drug_embeds.append(drug_emb.repeat(n_treated, 1))
@@ -78,10 +85,15 @@ class CellDrugDataset_v2(torch.utils.data.Dataset):
         self.is_null = is_null
         self.max_sample_size = max_sample_size  # 限制每个组最大细胞数
 
-        # --- 优化 1: 预处理 Embedding 为 Tensor 字典，避免每次 loc 查询 ---
+        # --- 优化 1: 预处理 Embedding, 避免每次 loc 查询 ---
+        # 注意: cell_embeddings.index 允许重复 (同一细胞系/样本下每个细胞一行),
+        # 必须保留全部行向量。不能用 dict comprehension 逐行写入 dict:
+        # 同名 key 会互相覆盖 (sciplex3 的 11,541 个单细胞向量会只剩 3 个)。
         print("Pre-loading embeddings to memory...", flush=True)
-        self.cell_emb_dict = {k: torch.tensor(v, dtype=torch.float32) for k, v in
-                              zip(cell_embeddings.index, cell_embeddings.values)}
+        self.cell_emb_matrix = torch.from_numpy(
+            np.ascontiguousarray(cell_embeddings.values, dtype=np.float32))  # (n_cells_total, dim)
+        self.cell_emb_rows = {k: np.asarray(v) for k, v in
+                              cell_embeddings.groupby(level=0, sort=False).indices.items()}
         self.drug_emb_dict = {k: torch.tensor(v, dtype=torch.float32) for k, v in
                               zip(drug_embeddings.index, drug_embeddings.values)}
 
@@ -131,10 +143,7 @@ class CellDrugDataset_v2(torch.utils.data.Dataset):
         # Input Metadata
         cell_type, drug_name, drug_dose = self.data_pairs[idx]
 
-        # 1. Get Embeddings (Fast Dict Lookup)
-        cell_embed = self.cell_emb_dict[cell_type]  # shape: (dim,)
-        if cell_embed.dim() == 1: cell_embed = cell_embed.unsqueeze(0)
-
+        # 1. Get Embeddings (Fast Lookup)
         drug_embed_raw = self.drug_emb_dict[drug_name].unsqueeze(0)  # shape: (1, dim)
 
         # Drug Dose Processing
@@ -178,9 +187,17 @@ class CellDrugDataset_v2(torch.utils.data.Dataset):
         real_outputs_treated = sample_tensor(gene_exprs_treated, self.max_sample_size)
         unperturb_gexp = sample_tensor(gene_exprs_untreated, self.max_sample_size)
 
+        # Cell embedding: 该细胞系/样本下所有单细胞向量 (n_avail, dim),
+        # 为每个预测细胞采样一个不同的对照细胞向量, 行数与 treated 细胞数对齐
+        rows = self.cell_emb_rows[cell_type]
+        n_avail = rows.shape[0]
+        n_pred = real_outputs_treated.shape[0]
+        pick = np.random.choice(n_avail, n_pred, replace=(n_avail < n_pred))
+        cell_embed = self.cell_emb_matrix[torch.from_numpy(rows[pick])]  # (n_pred, dim)
+
         return (
             (cell_type, drug_name, drug_dose),
-            cell_embed,  # (1, dim)
+            cell_embed,  # (n_pred, dim)
             drug_embed,  # (1, dim)
             real_outputs_treated,  # (N_sample, genes)
             unperturb_gexp  # (N_sample, genes) - 注意这里 Treated 和 Control 样本数可能不同
